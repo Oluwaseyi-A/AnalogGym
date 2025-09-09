@@ -54,7 +54,7 @@ class GraphAMPNMCF:
                       ('C1','x1.XC1','cap_mim_m3_1','c')
                      )    
 
-        self.op = {'M0':{},'M1':{},'M2':{},'M3':{},'M4':{},'M5':{},'M6':{},'M7':{},'M8':{}, 'M9':{},'M10':{},'M10':{},'M11':{},
+        self.op = {'M0':{},'M1':{},'M2':{},'M3':{},'M4':{},'M5':{},'M6':{},'M7':{},'M8':{}, 'M9':{},'M10':{},'M11':{},
                 'M12':{},'M13':{},'M14':{},'M15':{},'M16':{},'M17':{},'M18':{},'M19':{},'M20':{},'M21':{},'M22':{},'M23':{},
                 'Ib':{},'C0':{},'C1':{}
                  }
@@ -84,7 +84,7 @@ class GraphAMPNMCF:
           [21,22], [22,21], [21,26], [26,21], 
           [22,23], [23,22], [22,26], [26,22], [22,28], [28,22],
           [23,26], [26,23], [23,27], [27,23], [23,28], [28,23], 
-          [24,26], [26,24], 
+          [24,26], [26,24]
             ], dtype=torch.long).t().to(self.device)
         
         self.edge_type = torch.tensor([
@@ -125,36 +125,36 @@ class GraphAMPNMCF:
         self.L_C1 = 30 
         self.W_C1 = 30
         M_C1_low = 1
-        M_C1_high = 50 
+        M_C1_high = 30 
         self.C1_low = M_C1_low * (self.L_C1 * self.W_C1 * 2e-15 + (self.L_C1 + self.W_C1)*0.38e-15)
         self.C1_high = M_C1_high * (self.L_C1 * self.W_C1 * 2e-15 + (self.L_C1 + self.W_C1)*0.38e-15)
         
         self.W_C0 = 30
         self.L_C0 = 30
         M_C0_low = 1
-        M_C0_high = 50
+        M_C0_high = 30
         self.C0_low = M_C0_low * (self.L_C0 * self.W_C0 * 2e-15 + (self.L_C0 + self.W_C0) *0.38e-15)
         self.C0_high = M_C0_high * (self.L_C0 * self.W_C0 * 2e-15 + (self.L_C0 + self.W_C0)*0.38e-15)
         
         self.action_space_low = np.array([ 0.5, 0.5, 1, # M0(W_low,L_low,M_low)
                                         0.5, 0.5, 1,    # M8
-                                        0.5, 0.5, 1,      # M10
-                                        0.5, 0.5, 100,  # M11
+                                        0.5, 0.5, 1,    # M10
+                                        0.5, 0.5, 100,   # M11
                                         0.5, 0.5, 1,    # M17
                                         0.5, 0.5, 1,    # M21
-                                        0.5, 0.5, 1,      # M23
-                                        3e-6,         # Ib
-                                        M_C0_low,     # C0
-                                        M_C1_low])    # C1
+                                        0.5, 0.5, 1,    # M23
+                                        1e-6,           # Ib
+                                        M_C0_low,       # C0
+                                        M_C1_low])      # C1
         
-        self.action_space_high = np.array([10, 4, 50,  # M0(W_high,L_high,M_high) 
-                                        10, 4, 50,     # M8  
-                                        10, 4, 50,     # M10
-                                        10, 4, 500,    # M11
-                                        10, 4, 50,     # M17
-                                        10, 4, 50,    # M21
+        self.action_space_high = np.array([10, 5, 50,  # M0(W_high,L_high,M_high) 
+                                        10, 5, 50,     # M8  
+                                        10, 5, 50,     # M10
+                                        10, 5, 500,    # M11
+                                        10, 5, 50,     # M17
+                                        10, 5, 50,    # M21
                                         10, 5, 50,    # M23
-                                        20e-6,        # Ib  
+                                        30e-6,        # Ib  
                                         M_C0_high,    # C0
                                         M_C1_high])   # C1
         
@@ -162,24 +162,38 @@ class GraphAMPNMCF:
         self.action_shape = (self.action_dim,)    
         
         """Some target specifications for the final design"""
-        self.PSRP_target = -90
-        self.PSRN_target = -90 
-        
-        self.TC_target = 1e-6
-        self.Power_target = 2e2
-        self.vos_target = 4e-5
-        
-        self.cmrrdc_target = -80 
-        self.dcgain_target = 130
-        self.GBW_target = 1e6
         self.phase_margin_target = 60 
+        self.CL = 100  #100pF
+        self.dcgain_target = 130
+        self.PSRP_target = -80
+        self.PSRN_target = -80 
+        self.cmrrdc_target = -80
+        self.vos_target = 0.06e-3   
+        self.TC_target = 10e-6
+        self.settlingTime_target = 1e-6
+        self.FOML_target = 160
+        self.FOMS_target = 300
+        self.Active_Area_target = 150
+        self.Power_target = 0.3
+        self.GBW_target = 1.2e6
+        self.sr_target = 0.6        
 
-        self.sr_target = 4e5
-        self.settlingTime_target = 5e-6
+        """ baseline """
+        self.PSRR_base = -60
+        self.cmrrdc_base = -60
+        self.dcgain_base = 90
+        self.FOMS_base = 200
+        self.FOML_base = 60
+        self.settlingTime_base = 5e-6
+        self.Active_Area_base = 200
+        self.TC_base = 50e-6
+        self.vos_base = 0.1e-3
+        self.Power_base = 0.5
+        self.sr_base = 0.3
+        self.GBW_base = 1e6
+
         self.GND = 0
-        self.Vdd = 1.8
-        
-        self.rew_eng = True        
+        self.Vdd = 1.8      
         
 class GraphLDOtestbench:
     """                                                                                                                           
@@ -230,7 +244,7 @@ class GraphLDOtestbench:
                       ('CL','XCL','cap_mim_m3_1','c')
                      )    
 
-        self.op = {'M0':{},'M1':{},'M2':{},'M3':{},'M4':{},'M5':{},'M6':{},'M7':{},'M8':{}, 'M9':{},'M10':{},'M10':{},'M11':{},
+        self.op = {'M0':{},'M1':{},'M2':{},'M3':{},'M4':{},'M5':{},'M6':{},'M7':{},'M8':{}, 'M9':{},'M10':{},'M11':{},
                 'M12':{},'M13':{},'M14':{},'M15':{},'M16':{},'M17':{},'M18':{},'M19':{},'M20':{},'M21':{},'M22':{},'M24':{},
                 'Ib':{},'C0':{},'CL':{}
                  }
@@ -264,8 +278,7 @@ class GraphLDOtestbench:
           [23,28], [28,23], [23,29], [29,23], 
           [26,27], [27,26], [26,28], [28,26], [26,30], [30,26], 
           [28,29], [29,28],
-          [29,30], [30,29], 
-
+          [29,30], [30,29]
             ], dtype=torch.long).t().to(self.device)
         
         self.edge_type = torch.tensor([
@@ -310,35 +323,35 @@ class GraphLDOtestbench:
         self.L_CL = 30 
         self.W_CL = 30
         M_CL_low = 1
-        M_CL_high = 300 
+        M_CL_high = 100 
         self.CL_low = M_CL_low * (self.L_CL * self.W_CL * 2e-15 + (self.L_CL + self.W_CL)*0.38e-15)
         self.CL_high = M_CL_high * (self.L_CL * self.W_CL * 2e-15 + (self.L_CL + self.W_CL)*0.38e-15)
     
-        self.W_C0 = 10
-        self.L_C0 = 10
+        self.W_C0 = 30
+        self.L_C0 = 30
         M_C0_low = 1
-        M_C0_high = 50
+        M_C0_high = 30
         self.C0_low = M_C0_low * (self.L_C0 * self.W_C0 * 2e-15 + (self.L_C0 + self.W_C0) *0.38e-15)
         self.C0_high = M_C0_high * (self.L_C0 * self.W_C0*2e-15 + (self.L_C0 + self.W_C0)*0.38e-15)
         
         self.action_space_low = np.array([ 1, 0.5, 1,#M0(W_low,L_low,M_low)
                                         1, 0.5, 1, #M8
                                         1, 0.5, 1, #M10
-                                        2, 0.15, 100, #M_power
+                                        1, 0.5, 100, #M_power
                                         1, 0.5, 1, #M17
                                         1, 0.5, 1,#M21
-                                        3e-6,  # Ib
+                                        1e-6,  # Ib
                                         #M_Rfb_low, #Rfb
                                         M_C0_low, #C0
                                         M_CL_low]) # CL
         
-        self.action_space_high = np.array([10, 5, 30,#M0(W_high,L_high,M_high) 
-                                        10, 5, 30,#M8  
-                                        10, 5, 30,#M10
-                                        10, 2, 1000, #M_power
-                                        10, 5, 30,#M17
-                                        10, 5, 30,#M21  
-                                        20e-6,   # Ib
+        self.action_space_high = np.array([10, 5, 50,#M0(W_high,L_high,M_high) 
+                                        10, 5, 50,#M8  
+                                        10, 5, 50,#M10
+                                        10, 5, 1000, #M_power
+                                        10, 5, 50,#M17
+                                        10, 5, 50,#M21  
+                                        30e-6,   # Ib
                                         #M_Rfb_high,  
                                         M_C0_high,   # C0
                                         M_CL_high])  # CL
@@ -366,6 +379,3082 @@ class GraphLDOtestbench:
         self.phase_margin_target = 60 
 
         self.v_undershoot_target = 0.1
-        self.v_overshoot_target = 0.1
+        self.v_overshoot_target = 0.1              
 
-        self.rew_eng = True                
+class GraphAMPDFCFC1:
+    """                                                                                                                           
+    node 0 : M0 , node 1 : M1 , node 2 : M2 , node 3 : M3 , node 4 : M4 , node 5 : M5
+    node 6 : M6 , node 7 : M7 , node 8 : M8 , node 9 : M9 , node 10 : M10 , node 11 : M11
+    node 12 : M12 , node 13 : M13 , node 14 : M14 , node 15 : M15 , node 16 : M16 , node17 : M17 ,
+    node 18 : M18 , node 19 : M19 , node 20 : M20 , node 21 : M21 , node 22 : M22 ,   
+    node23 : M23 , node24: M24, node25: M25, node26 : Ib , node27 : VDD , node28 : GND , node29 : C0 , node30 : C1
+
+    """
+    def __init__(self):        
+        # self.device = torch.device(
+        #     "cuda:0" if torch.cuda.is_available() else "cpu"
+        # )
+        
+        self.device = torch.device(
+           "cpu"
+        )
+        self.ckt_hierarchy = (
+                      ('M0','x1.XM0','pfet_01v8','m'),
+                      ('M1','x1.XM1','pfet_01v8','m'),
+                      ('M2','x1.XM2','pfet_01v8','m'),
+                      ('M3','x1.XM3','pfet_01v8','m'),
+                      ('M4','x1.XM4','pfet_01v8','m'),
+                      ('M5','x1.XM5','pfet_01v8','m'),
+                      ('M6','x1.XM6','pfet_01v8','m'),
+                      ('M7','x1.XM7','pfet_01v8','m'),
+                      ('M8','x1.XM8','pfet_01v8','m'),
+                      ('M9','x1.XM9','pfet_01v8','m'),
+                      ('M10','x1.XM10','pfet_01v8','m'),
+                      ('M11','x1.XM11','pfet_01v8','m'),
+                      ('M12','x1.XM12','pfet_01v8','m'),
+
+                      ('M13','x1.XM13','nfet_01v8','m'),
+                      ('M14','x1.XM14','nfet_01v8','m'),
+                      ('M15','x1.XM15','nfet_01v8','m'),
+                      ('M16','x1.XM16','nfet_01v8','m'),
+                      ('M17','x1.XM17','nfet_01v8','m'),
+                      ('M18','x1.XM18','nfet_01v8','m'),
+                      ('M19','x1.XM19','nfet_01v8','m'),
+                      ('M20','x1.XM20','nfet_01v8','m'),
+                      ('M21','x1.XM21','nfet_01v8','m'),
+                      ('M22','x1.XM22','nfet_01v8','m'),
+                      ('M23','x1.XM23','nfet_01v8','m'),
+                      ('M24','x1.XM24','nfet_01v8','m'),
+                      ('M25','x1.XM25','nfet_01v8','m'),
+
+                      ('Ib','','Ib','i'),
+                      ('C0','x1.XC0','cap_mim_m3_1','c'),
+                      ('C1','x1.XC1','cap_mim_m3_1','c')
+                     )    
+
+        self.op = {'M0':{},'M1':{},'M2':{},'M3':{},'M4':{},'M5':{},'M6':{},'M7':{},'M8':{}, 'M9':{},'M10':{},'M11':{},'M12':{},
+                'M13':{},'M14':{},'M15':{},'M16':{},'M17':{},'M18':{},'M19':{},'M20':{},'M21':{},'M22':{},'M23':{},'M24':{},'M25':{},
+                'Ib':{},'C0':{},'C1':{}
+                 }
+
+        self.edge_index = torch.tensor([
+          [0,1], [1,0], [0,2], [2,0], [0,3], [3,0], [0,4], [4,0], [0,7], [7,0], [0,8], [8,0], [0,27], [27,0], [0,26], [26,0], 
+          [1,2], [2,1], [1,3], [3,1], [1,4], [4,1], [1,7], [7,1], [1,8], [8,1], [1,26], [26,1], [1,13], [13,1], [1,27], [27,1], [1,18], [18,1], [1,19], [19,1], [1,20], [20,1], [1,21], [21,1], 
+          [2,3], [3,2], [2,4], [4,2], [2,7], [7,2], [2,8], [8,2], [2,27], [27,2], [2,14], [14,2], [2,26], [26,2],  
+          [3,4], [4,3], [3,7], [7,3], [3,8], [8,3], [3,26], [26,3], [3,27], [27,3], [3,13], [13,3], [3,14], [14,3], [3,15], [15,3], [3,16], [16,3], [3,17], [17,3], 
+          [4,7], [7,4], [4,8], [8,4], [4,26], [26,4], [4,27], [27,4], [4,9], [9,4], [4,10], [10,4],
+          [5,6], [6,5], [5,16], [16,5], [5,27], [27,5], 
+          [6,16], [16,6], [6,17], [17,6], [6,11], [11,6], [6,12], [12,6], [6,27], [27,6], [6,29], [29,6], 
+          [7,8], [8,7], [7,26], [26,7], [7,27], [27,7], [7,23], [23,7], [7,24], [24,7], [7,25], [25,7], [7,30], [30,7],
+          [8,24], [24,8], [8,30], [30,8], [8,26], [26,8], [8,27], [27,8], 
+          [9,16], [16,9], [9,20], [20,9], [9,10] ,[10,9],
+          [10,17], [17,10], [10,21], [21,10],
+          [11,22], [22,11], [11,23], [23,11], [11,12], [12,11], [11,17], [17,11], [11,29], [29,11], [11,27], [27,11],
+          [12,25], [25,12], [12,29], [29,12], [12,17], [17,12], [12,27], [27,12],
+          [13,18], [18,13], [13,19], [19,13], [13,20], [20,13], [13,21], [21,13], [13,14], [14,13], [13,15], [15,13], [13,16], [16,13], [13,17], [17,13],    
+          [14,15], [15,14], [14,16], [16,14], [14,17], [17,14], [14,19], [19,14], 
+          [15,16], [16,15], [15,17], [17,15], [15,28], [28,15], 
+          [16,17], [17,16], [16,20], [20,16], 
+          [17,29], [29,17], [17,21], [21,17], 
+          [18,19], [19,18], [18,20], [20,18], [18,21], [21,18], [18,28], [28,18], 
+          [19,20], [20,19], [19,21], [21,19], [19,28], [28,19],
+          [20,21], [21,20], [20,28], [28,20],
+          [21,28], [28,21], 
+          [22,23], [23,22], [22,28], [28,22], 
+          [23,24], [24,23], [23,25], [25,23], [23,30], [30,23], [23,28], [28,23], 
+          [24,30], [30,24], [24,25], [25,24], [24,28], [28,24], 
+          [25,29], [29,25], [25,30], [30,25], [25,28], [28,25], 
+          [26,28], [28,26]
+            ], dtype=torch.long).t().to(self.device)
+        
+        self.edge_type = torch.tensor([
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1,             # M0
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,   # M1
+            0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1,                   # M2
+            0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, # M3
+            0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0,                         # M4
+            0, 0, 0, 0, 1, 1,                                           # M5
+            0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0,                         # M6
+            0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,                   # M7
+            0, 0, 0, 0, 1, 1, 1, 1,                                     # M8
+            0, 0, 0, 0, 0, 0,                                           # M9
+            0, 0, 0, 0,                                                 # M10
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1,                         # M11
+            0, 0, 0, 0, 0, 0, 1, 1,                                     # M12
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,             # M13
+            0, 0, 0, 0, 0, 0, 0, 0,                                     # M14
+            0, 0, 0, 0, 1, 1,                                           # M15
+            0, 0, 0, 0,                                                 # M16
+            0, 0, 0, 0,                                                 # M17
+            0, 0, 0, 0, 0, 0, 1, 1,                                     # M18
+            0, 0, 0, 0, 1, 1,                                           # M19
+            0, 0, 1, 1,                                                 # M20
+            1, 1,                                                       # M21
+            0, 0, 1, 1,                                                 # M22 
+            0, 0, 0, 0, 0, 0, 1, 1,                                     # M23
+            0, 0, 0, 0, 1, 1,                                           # M24
+            0, 0, 0, 0, 1, 1,                                           # M25
+            1, 1,                                                       # Ib
+            ]).to(self.device)
+        
+        self.num_relations = 2
+        self.num_nodes = 31
+        self.num_node_features = 12
+        self.obs_shape = (self.num_nodes, self.num_node_features)
+
+        """Select an action from the input state."""
+
+        self.L_C1 = 30 
+        self.W_C1 = 30
+        M_C1_low = 1
+        M_C1_high = 30 
+        self.C1_low = M_C1_low * (self.L_C1 * self.W_C1 * 2e-15 + (self.L_C1 + self.W_C1)*0.38e-15)
+        self.C1_high = M_C1_high * (self.L_C1 * self.W_C1 * 2e-15 + (self.L_C1 + self.W_C1)*0.38e-15)
+        
+        self.W_C0 = 30
+        self.L_C0 = 30
+        M_C0_low = 1
+        M_C0_high = 30
+        self.C0_low = M_C0_low * (self.L_C0 * self.W_C0 * 2e-15 + (self.L_C0 + self.W_C0) *0.38e-15)
+        self.C0_high = M_C0_high * (self.L_C0 * self.W_C0 * 2e-15 + (self.L_C0 + self.W_C0)*0.38e-15)
+        
+        self.action_space_low = np.array([ 0.5, 0.5, 1, # M0(W_low,L_low,M_low)
+                                        0.5, 0.5, 1,    # M9
+                                        0.5, 0.5, 1,    # M11
+                                        0.5, 0.5, 100,  # M12
+                                        0.5, 0.5, 1,    # M17
+                                        0.5, 0.5, 1,    # M18
+                                        0.5, 0.5, 1,    # M22
+                                        0.5, 0.5, 1,    # M24
+                                        0.5, 0.5, 1,    # M25
+                                        1e-6,           # Ib
+                                        M_C0_low,       # C0
+                                        M_C1_low])      # C1
+        
+        self.action_space_high = np.array([10, 5, 50,  # M0(W_high,L_high,M_high) 
+                                        10, 5, 50,     # M9  
+                                        10, 5, 50,     # M11
+                                        10, 5, 500,    # M12
+                                        10, 5, 50,     # M17
+                                        10, 5, 50,     # M18
+                                        10, 5, 50,     # M22
+                                        10, 5, 50,     # M24
+                                        10, 5, 50,     # M25
+                                        30e-6,         # Ib  
+                                        M_C0_high,     # C0:50
+                                        M_C1_high])    # C1:50
+        
+        self.action_dim = len(self.action_space_low)
+        self.action_shape = (self.action_dim,)    
+        
+        """Some target specifications for the final design"""
+        self.phase_margin_target = 60 
+        self.CL = 100  #100pF
+        self.dcgain_target = 130
+        self.PSRP_target = -80
+        self.PSRN_target = -80 
+        self.cmrrdc_target = -80
+        self.vos_target = 0.06e-3   
+        self.TC_target = 10e-6
+        self.settlingTime_target = 1e-6
+        self.FOML_target = 400
+        self.FOMS_target = 300
+        self.Active_Area_target = 80
+        self.Power_target = 0.3
+        self.GBW_target = 1.05e6
+        self.sr_target = 1.3
+
+        """ baseline """
+        self.PSRR_base = -60
+        self.cmrrdc_base = -60
+        self.dcgain_base = 90
+        self.FOMS_base = 200
+        self.FOML_base = 300
+        self.settlingTime_base = 5e-6
+        self.Active_Area_base = 100
+        self.TC_base = 50e-6
+        self.vos_base = 0.1e-3
+        self.Power_base = 0.4
+        self.sr_base = 1.2
+        self.GBW_base = 0.8e6
+
+        self.GND = 0
+        self.Vdd = 1.8
+        
+        self.rew_eng = True        
+
+class GraphAMPDFCFC2:
+    """                                                                                                                           
+    node 0 : M0 , node 1 : M1 , node 2 : M2 , node 3 : M3 , node 4 : M4 , node 5 : M5
+    node 6 : M6 , node 7 : M7 , node 8 : M8 , node 9 : M9 , node 10 : M10 , node 11 : M11
+    node 12 : M12 , node 13 : M13 , node 14 : M14 , node 15 : M15 , node 16 : M16 , node17 : M17 ,
+    node 18 : M18 , node 19 : M19 , node 20 : M20 , node 21 : M21 , node 22 : M22 ,   
+    node23 : M23 , node24: M24, node25: M25, node26 : Ib , node27 : VDD , node28 : GND , 
+    node29 : C0 , node30 : C1
+    """
+    def __init__(self):        
+        # self.device = torch.device(
+        #     "cuda:0" if torch.cuda.is_available() else "cpu"
+        # )
+        
+        self.device = torch.device(
+           "cpu"
+        )
+        self.ckt_hierarchy = (
+                      ('M0','x1.XM0','pfet_01v8','m'),
+                      ('M1','x1.XM1','pfet_01v8','m'),
+                      ('M2','x1.XM2','pfet_01v8','m'),
+                      ('M3','x1.XM3','pfet_01v8','m'),
+                      ('M4','x1.XM4','pfet_01v8','m'),
+                      ('M5','x1.XM5','pfet_01v8','m'),
+                      ('M6','x1.XM6','pfet_01v8','m'),
+                      ('M7','x1.XM7','pfet_01v8','m'),
+                      ('M8','x1.XM8','pfet_01v8','m'),
+                      ('M9','x1.XM9','pfet_01v8','m'),
+                      ('M10','x1.XM10','pfet_01v8','m'),
+                      ('M11','x1.XM11','pfet_01v8','m'),
+                      ('M12','x1.XM12','pfet_01v8','m'),
+
+                      ('M13','x1.XM13','nfet_01v8','m'),
+                      ('M14','x1.XM14','nfet_01v8','m'),
+                      ('M15','x1.XM15','nfet_01v8','m'),
+                      ('M16','x1.XM16','nfet_01v8','m'),
+                      ('M17','x1.XM17','nfet_01v8','m'),
+                      ('M18','x1.XM18','nfet_01v8','m'),
+                      ('M19','x1.XM19','nfet_01v8','m'),
+                      ('M20','x1.XM20','nfet_01v8','m'),
+                      ('M21','x1.XM21','nfet_01v8','m'),
+                      ('M22','x1.XM22','nfet_01v8','m'),
+                      ('M23','x1.XM23','nfet_01v8','m'),
+                      ('M24','x1.XM24','nfet_01v8','m'),
+                      ('M25','x1.XM25','nfet_01v8','m'),
+
+                      ('Ib','','Ib','i'),
+                      ('C0','x1.XC0','cap_mim_m3_1','c'),
+                      ('C1','x1.XC1','cap_mim_m3_1','c')
+                     )    
+
+        self.op = {'M0':{},'M1':{},'M2':{},'M3':{},'M4':{},'M5':{},'M6':{},'M7':{},'M8':{}, 'M9':{},'M10':{},'M11':{},'M12':{},
+                'M13':{},'M14':{},'M15':{},'M16':{},'M17':{},'M18':{},'M19':{},'M20':{},'M21':{},'M22':{},'M23':{},'M24':{},'M25':{},
+                'Ib':{},'C0':{},'C1':{}
+                 }
+
+        self.edge_index = torch.tensor([
+          [0,1], [1,0], [0,2], [2,0], [0,3], [3,0], [0,4], [4,0], [0,7], [7,0], [0,27], [27,0], [0,26], [26,0], 
+          [1,2], [2,1], [1,3], [3,1], [1,4], [4,1], [1,7], [7,1], [1,26], [26,1], [1,13], [13,1], [1,27], [27,1], [1,18], [18,1], [1,19], [19,1], [1,20], [20,1], [1,21], [21,1], [1,22], [22,1], 
+          [2,3], [3,2], [2,4], [4,2], [2,7], [7,2], [2,27], [27,2], [2,14], [14,2], [2,26], [26,2],  
+          [3,4], [4,3], [3,7], [7,3], [3,26], [26,3], [3,27], [27,3], [3,13], [13,3], [3,14], [14,3], [3,15], [15,3], [3,16], [16,3], [3,17], [17,3], 
+          [4,7], [7,4], [4,26], [26,4], [4,27], [27,4], [4,8], [8,4], [4,9], [9,4],   
+          [5,6], [6,5], [5,16], [16,5], [5,27], [27,5],           
+          [6,16], [16,6], [6,17], [17,6], [6,10], [10,6], [6,11], [11,6], [6,12], [12,6], [6,27], [27,6], [6,29], [29,6], [6,30], [30,6], 
+          [7,26], [26,7], [7,27], [27,7], [7,24], [24,7], [7,25], [25,7], 
+          [8,16], [16,8], [8,20], [20,8], [8,9] ,[9,8],
+          [9,17], [17,9], [9,21], [21,9],
+          [10,22], [22,10], [10,30], [30,10], [10,11], [11,10], [10,12], [12,10], [10,17], [17,10], [10,29], [29,10], [10,27], [27,10], 
+          [11,23], [23,11], [11,24], [24,11], [11,12], [12,11], [11,17], [17,11], [11,29], [29,11], [11,30], [30,11], [11,27], [27,11],
+          [12,25], [25,12], [12,29], [29,12], [12,30], [30,12], [12,17], [17,12], [12,27], [27,12],
+          [13,18], [18,13], [13,19], [19,13], [13,20], [20,13], [13,21], [21,13], [13,22], [22,13], [13,14], [14,13], [13,15], [15,13], [13,16], [16,13], [13,17], [17,13], 
+          [14,15], [15,14], [14,16], [16,14], [14,17], [17,14], [14,19], [19,14],   
+          [15,16], [16,15], [15,17], [17,15], [15,28], [16,28],
+          [16,17], [17,16], [16,20], [20,16], 
+          [17,29], [29,17], [17,30], [30,17], [17,21], [21,17], 
+          [18,19], [19,18], [18,20], [20,18], [18,21], [21,18], [18,22], [22,18], [18,28], [28,18], 
+          [19,20], [20,19], [19,21], [21,19], [19,22], [22,19], [19,28], [28,19],
+          [20,21], [21,20], [20,22], [22,20], [20,28], [28,20],
+          [21,22], [22,21], [21,28], [28,21], 
+          [22,30], [30,22], [22,28], [28,22], 
+          [23,24], [24,23], [23,28], [28,23], 
+          [24,25], [25,24], [24,28], [28,24], 
+          [25,29], [29,25], [25,28], [28,25], 
+          [26,28], [28,26], 
+          [29,30], [30,29]
+            ], dtype=torch.long).t().to(self.device)
+        
+        self.edge_type = torch.tensor([
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1,             # M0
+            0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, # M1
+            0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1,                   # M2
+            0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, # M3
+            0, 0, 1, 1, 1, 1, 0, 0, 0, 0,                         # M4
+            0, 0, 0, 0, 1, 1,                                     # M5
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0,       # M6
+            1, 1, 1, 1, 0, 0, 0, 0,                               # M7
+            0, 0, 0, 0, 0, 0,                                     # M8
+            0, 0, 0, 0,                                           # M9
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1,             # M10
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1,             # M11
+            0, 0, 0, 0, 0, 0, 0, 0, 1, 1,                         # M12
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, # M13
+            0, 0, 0, 0, 0, 0, 0, 0,                               # M14
+            0, 0, 0, 0, 1, 1,                                     # M15
+            0, 0, 0, 0,                                           # M16
+            0, 0, 0, 0, 0, 0,                                     # M17
+            0, 0, 0, 0, 0, 0, 0, 0, 1, 1,                         # M18
+            0, 0, 0, 0, 0, 0, 1, 1,                               # M19
+            0, 0, 0, 0, 1, 1,                                     # M20
+            0, 0, 1, 1,                                           # M21
+            0, 0, 1, 1,                                           # M22 
+            0, 0, 1, 1,                                           # M23
+            0, 0, 1, 1,                                           # M24
+            0, 0, 1, 1,                                           # M25
+            1, 1,                                                 # Ib
+            1, 1,                                                 # C0
+            ]).to(self.device)
+        
+        self.num_relations = 2
+        self.num_nodes = 31
+        self.num_node_features = 12
+        self.obs_shape = (self.num_nodes, self.num_node_features)
+
+        """Select an action from the input state."""
+
+        self.L_C1 = 30 
+        self.W_C1 = 30
+        M_C1_low = 1
+        M_C1_high = 30 
+        self.C1_low = M_C1_low * (self.L_C1 * self.W_C1 * 2e-15 + (self.L_C1 + self.W_C1)*0.38e-15)
+        self.C1_high = M_C1_high * (self.L_C1 * self.W_C1 * 2e-15 + (self.L_C1 + self.W_C1)*0.38e-15)
+        
+        self.W_C0 = 30
+        self.L_C0 = 30
+        M_C0_low = 1
+        M_C0_high = 30
+        self.C0_low = M_C0_low * (self.L_C0 * self.W_C0 * 2e-15 + (self.L_C0 + self.W_C0) *0.38e-15)
+        self.C0_high = M_C0_high * (self.L_C0 * self.W_C0 * 2e-15 + (self.L_C0 + self.W_C0)*0.38e-15)
+        
+        self.action_space_low = np.array([ 0.5, 0.5, 1, # M0(W_low,L_low,M_low)
+                                        0.5, 0.5, 1,    # M8
+                                        0.5, 0.5, 1,    # M10
+                                        0.5, 0.5, 1,    # M11
+                                        0.5, 0.5, 100,  # M12
+                                        0.5, 0.5, 1,    # M18
+                                        0.5, 0.5, 1,    # M23
+                                        0.5, 0.5, 1,    # M25
+                                        1e-6,           # Ib
+                                        M_C0_low,       # C0
+                                        M_C1_low])      # C1
+        
+        self.action_space_high = np.array([10, 5, 50,  # M0(W_high,L_high,M_high) 
+                                        10, 5, 50,     # M8
+                                        10, 5, 50,     # M10
+                                        10, 5, 50,     # M11
+                                        10, 5, 500,    # M12
+                                        10, 5, 50,     # M18
+                                        10, 5, 50,     # M23
+                                        10, 5, 50,     # M25
+                                        30e-6,         # Ib  
+                                        M_C0_high,     # C0:50
+                                        M_C1_high])    # C1:50
+        
+        self.action_dim = len(self.action_space_low)
+        self.action_shape = (self.action_dim,)
+
+
+        """Some target specifications for the final design"""
+        self.phase_margin_target = 60 
+        self.CL = 100  #100pF
+        self.dcgain_target = 130
+        self.PSRP_target = -80
+        self.PSRN_target = -80 
+        self.cmrrdc_target = -80
+        self.vos_target = 0.06e-3   
+        self.TC_target = 10e-6
+        self.settlingTime_target = 1e-6
+        self.FOML_target = 500
+        self.FOMS_target = 1200
+        self.Active_Area_target = 80
+        self.Power_target = 0.25
+        self.GBW_target = 4e6
+        self.sr_target = 1.25
+
+        """ baseline """
+        self.PSRR_base = -60
+        self.cmrrdc_base = -60
+        self.dcgain_base = 90
+        self.FOMS_base = 1000
+        self.FOML_base = 400
+        self.settlingTime_base = 5e-6
+        self.Active_Area_base = 100
+        self.TC_base = 50e-6
+        self.vos_base = 0.1e-3    
+        self.Power_base = 0.3
+        self.sr_base = 1.2
+        self.GBW_base = 4e6
+
+        self.GND = 0
+        self.Vdd = 1.8
+        
+        self.rew_eng = True        
+"""
+class GraphAMPNMCNR:
+    def __init__(self):        
+        # self.device = torch.device(
+        #     "cuda:0" if torch.cuda.is_available() else "cpu"
+        # )
+        
+        self.device = torch.device(
+           "cpu"
+        )
+        # we do not include R here since, it is not straght forward to get the resistance from resistor in SKY130 PDK
+        self.ckt_hierarchy = (
+                      ('M0','x1.XM0','pfet_01v8','m'),
+                      ('M1','x1.XM1','pfet_01v8','m'),
+                      ('M2','x1.XM2','pfet_01v8','m'),
+                      ('M3','x1.XM3','pfet_01v8','m'),
+                      ('M4','x1.XM4','pfet_01v8','m'),
+                      ('M5','x1.XM5','pfet_01v8','m'),
+                      ('M6','x1.XM6','pfet_01v8','m'),
+                      ('M7','x1.XM7','pfet_01v8','m'),
+                      ('M8','x1.XM8','pfet_01v8','m'),
+                      ('M9','x1.XM9','pfet_01v8','m'),
+                      ('M10','x1.XM10','pfet_01v8','m'),
+                      ('M11','x1.XM11','pfet_01v8','m'),
+                      ('M12','x1.XM12','nfet_01v8','m'),
+                      ('M13','x1.XM13','nfet_01v8','m'),
+                      ('M14','x1.XM14','nfet_01v8','m'),
+                      ('M15','x1.XM15','nfet_01v8','m'),
+                      ('M16','x1.XM16','nfet_01v8','m'),
+                      ('M17','x1.XM17','nfet_01v8','m'),
+                      ('M18','x1.XM18','nfet_01v8','m'),
+                      ('M19','x1.XM19','nfet_01v8','m'),
+                      ('M20','x1.XM20','nfet_01v8','m'),
+                      ('M21','x1.XM21','nfet_01v8','m'),
+                      ('M22','x1.XM22','nfet_01v8','m'),
+                      ('M23','x1.XM23','nfet_01v8','m'),
+
+                      ('Ib','','Ib','i'),
+                      ('C0','x1.XC0','cap_mim_m3_1','c'),
+                      ('C1','x1.XC1','cap_mim_m3_1','c')
+                     )    
+
+        self.op = {'M0':{},'M1':{},'M2':{},'M3':{},'M4':{},'M5':{},'M6':{},'M7':{},'M8':{}, 'M9':{},'M10':{},'M11':{},
+                'M12':{},'M13':{},'M14':{},'M15':{},'M16':{},'M17':{},'M18':{},'M19':{},'M20':{},'M21':{},'M22':{},'M23':{},
+                'Ib':{},'C0':{},'C1':{}}
+
+        self.edge_index = torch.tensor([
+          [0,1], [1,0], [0,2], [2,0], [0,3], [3,0], [0,4], [4,0], [0,7], [7,0], [0,11], [11,0], [0,24], [24,0], [0,25], [25,0], 
+          [1,2], [2,1], [1,3], [3,1], [1,4], [4,1], [1,7], [7,1], [1,11], [11,1], [1,25], [25,1], [1,12], [12,1], [1,24], [24,1], [1,17], [17,1], [1,18], [18,1], [1,19], [19,1], [1,20], [20,1],
+          [2,3], [3,2], [2,4], [4,2], [2,7], [7,2], [2,11], [11,2], [2,24], [24,2], [2,13], [13,2], [2,25], [25,2], 
+          [3,4], [4,3], [3,7], [7,3], [3,11], [11,3], [3,24], [24,3], [3,25], [25,3], [3,12], [12,3], [3,13], [13,3], [3,14], [14,3], [3,15], [15,3], [3,16], [16,3],           
+          [4,7], [7,4], [4,11], [11,4], [4,24], [24,4], [4,8], [8,4], [4,9], [9,4], [4,25], [25,4],
+          [5,6], [6,5], [5,15], [15,5], [5,25], [25,5], 
+          [6,15], [15,6], [6,16], [16,6], [6,10], [10,6], [6,25], [25,6], [6,27], [27,6],
+          [7,11], [11,7], [7,24], [24,7], [7,25], [25,7], [7,22], [22,7], [7,23], [23,7], [7,28], [28,7],
+          [8,9], [9,8], [8,15], [15,8], [8,19], [19,8], 
+          [9,16], [16,9], [9,20], [20,9],          
+          [10,16], [16,10], [10,21], [21,10], [10,22], [22,10], [10,25], [25,10], [10,27], [27,10],
+          [11,23], [23,11], [11,24], [24,11], [11,25], [25,11], [11,29], [29,11],
+          [12,13], [13,12], [12,14], [14,12], [12,15], [15,12], [12,16], [16,12], [12,17], [17,12], [12,18], [18,12], [12,19], [19,12], [12,20], [20,12],
+          [13,14], [14,13], [13,15], [15,13], [13,16], [16,13], [13,18], [18,13],  
+          [14,15], [15,14], [14,16], [16,14], [14,26], [26,14],  
+          [15,16], [16,15], [15,19], [19,15], 
+          [16,20], [20,16], [16,27], [27,16], 
+          [17,18], [18,17], [17,19], [19,17], [17,20], [20,17], [17,26], [26,17], 
+          [18,19], [19,18], [18,20], [20,18], [18,26], [26,18],          
+          [19,20], [20,19], [19,26], [26,19],          
+          [20,26], [26,20],          
+          [21,22], [22,21], [21,26], [26,21],          
+          [22,23], [23,22], [22,26], [26,22], [22,28], [28,22],         
+          [23,26], [26,23], [23,28], [28,23], [23,29], [29,23], 
+          [24,26], [26,24], 
+          [27,28], [28,27], [27,29], [29,27], 
+          [28,29], [29,28]
+            ], dtype=torch.long).t().to(self.device)
+        
+        self.edge_type = torch.tensor([
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1,             # M0
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,   # M1
+            0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1,                   # M2
+            0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, # M3
+            0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1,                         # M4
+            0, 0, 0, 0, 1, 1,                                           # M5
+            0, 0, 0, 0, 0, 0, 1, 1, 0, 0,                               # M6
+            0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0,                         # M7
+            0, 0, 0, 0, 0, 0,                                           # M8
+            0, 0, 0, 0,                                                 # M9
+            0, 0, 0, 0, 0, 0, 1, 1, 0, 0,                               # M10
+            0, 0, 1, 1, 1, 1, 0, 0,                                     # M11
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,             # M12
+            0, 0, 0, 0, 0, 0, 0, 0,                                     # M13
+            0, 0, 0, 0, 1, 1,                                           # M14
+            0, 0, 0, 0,                                                 # M15
+            0, 0, 0, 0,                                                 # M16
+            0, 0, 0, 0, 0, 0, 1, 1,                                     # M17
+            0, 0, 0, 0, 1, 1,                                           # M18
+            0, 0, 1, 1,                                                 # M19
+            1, 1,                                                       # M20
+            0, 0, 1, 1,                                                 # M21
+            0, 0, 1, 1, 0, 0,                                           # M22
+            1, 1, 0, 0, 0, 0,                                           # M23
+            1, 1,                                                       # Ib
+            0, 0, 0, 0,                                                 # C0
+            0, 0,                                                       # C1
+            ]).to(self.device)
+        
+        self.num_relations = 2
+        self.num_nodes = 30
+        self.num_node_features = 13
+        self.obs_shape = (self.num_nodes, self.num_node_features)
+
+
+        self.L_C1 = 30 
+        self.W_C1 = 30
+        M_C1_low = 1
+        M_C1_high = 30 
+        self.C1_low = M_C1_low * (self.L_C1 * self.W_C1 * 2e-15 + (self.L_C1 + self.W_C1)*0.38e-15)   # 1.823 pF
+        self.C1_high = M_C1_high * (self.L_C1 * self.W_C1 * 2e-15 + (self.L_C1 + self.W_C1)*0.38e-15) # 54.69 pF
+        
+        self.W_C0 = 30
+        self.L_C0 = 30
+        M_C0_low = 1
+        M_C0_high = 30
+        self.C0_low = M_C0_low * (self.L_C0 * self.W_C0 * 2e-15 + (self.L_C0 + self.W_C0) *0.38e-15)  # 1.823 pF
+        self.C0_high = M_C0_high * (self.L_C0 * self.W_C0 * 2e-15 + (self.L_C0 + self.W_C0)*0.38e-15) # 54.69 pF
+        
+        self.W_R0 = 0.35 # W: 0.35um
+        self.L_R0 = 3 # L: 3um
+        M_R0_low = 1
+        M_R0_high = 20
+        self.Rsheet = 1112.4
+        self.R0_low =  self.Rsheet * self.L_R0 / self.W_R0 / M_R0_high  # 476.7Ω
+        self.R0_high = self.Rsheet * self.L_R0 / self.W_R0 / M_R0_low   # 9534.8Ω
+
+        self.action_space_low = np.array([ 0.5, 0.5, 1, # M0(W_low,L_low,M_low)
+                                        0.5, 0.5, 1,    # M8
+                                        0.5, 0.5, 1,    # M10
+                                        0.5, 0.5, 1,    # M17
+                                        0.5, 0.5, 1,    # M21
+                                        0.5, 0.5, 1,    # M23
+                                        1e-6,           # Ib
+                                        M_C0_low,       # C0 : 1.823 pF
+                                        M_C1_low,       # C1 : 1.823 pF 
+                                        M_R0_low ])     # R0 : 476.7Ω
+        
+        self.action_space_high = np.array([10, 5, 50,  # M0(W_high,L_high,M_high) 
+                                        10, 5, 50,     # M8  
+                                        10, 5, 50,     # M10
+                                        10, 5, 50,     # M17
+                                        10, 5, 50,     # M21
+                                        10, 5, 50,     # M23
+                                        30e-6,         # Ib  
+                                        M_C0_high,     # C0: 54.69 pF
+                                        M_C1_high,     # C1: 54.69 pF
+                                        M_R0_high, ])  # R0: 9.5348 kΩ
+        
+        self.action_dim = len(self.action_space_low)
+        self.action_shape = (self.action_dim,)    
+        
+        self.phase_margin_target = 60 
+        self.CL = 100  #100pF
+        self.dcgain_target = 130
+        self.PSRP_target = -80
+        self.PSRN_target = -80 
+        self.cmrrdc_target = -80
+        self.vos_target = 0.06e-3   
+        self.TC_target = 10e-6
+        self.settlingTime_target = 1e-6
+        self.FOML_target = 125
+        self.FOMS_target = 300
+        self.Active_Area_target = 400
+        self.Power_target = 0.4
+        self.GBW_target = 1.2e6
+        self.sr_target = 0.5
+
+        self.PSRR_base = -60
+        self.cmrrdc_base = -60
+        self.dcgain_base = 90
+        self.FOML_base = 20
+        self.FOMS_base = 200
+        self.settlingTime_base = 5e-6
+        self.Active_Area_base = 500
+        self.TC_base = 50e-6
+        self.vos_base = 0.1e-3    
+        self.Power_base = 0.5
+        self.sr_base = 0.1
+        self.GBW_base = 1e6
+
+        self.GND = 0
+        self.Vdd = 1.8        
+"""
+
+class GraphAMPNMCNR:
+    """                                                                                                                           
+    node 0 : M0 , node 1 : M1 , node 2 : M2 , node 3 : M3 , node 4 : M4 , node 5 : M5
+    node 6 : M6 , node 7 : M7 , node 8 : M8 , node 9 : M9 , node 10 : M10 , node 11 : M11
+    node 12 : M12 , node 13 : M13 , node 14 : M14 , node 15 : M15 , node 16 : M16 , node17 : M17 ,
+    node 18 : M18 , node 19 : M19 , node 20 : M20 , node 21 : M21 , node 22 : M22 ,   
+    node23 : M23 , node24 : Ib , node25 : VDD , node26 : GND , node27 : C0 , node28 : C1 , node29 : R0
+    """
+    def __init__(self):        
+        # self.device = torch.device(
+        #     "cuda:0" if torch.cuda.is_available() else "cpu"
+        # )
+        
+        self.device = torch.device(
+           "cpu"
+        )
+        # we do not include R here since, it is not straght forward to get the resistance from resistor in SKY130 PDK
+        self.ckt_hierarchy = (
+                      ('M0','x1.XM0','pfet_01v8','m'),
+                      ('M1','x1.XM1','pfet_01v8','m'),
+                      ('M2','x1.XM2','pfet_01v8','m'),
+                      ('M3','x1.XM3','pfet_01v8','m'),
+                      ('M4','x1.XM4','pfet_01v8','m'),
+                      ('M5','x1.XM5','pfet_01v8','m'),
+                      ('M6','x1.XM6','pfet_01v8','m'),
+                      ('M7','x1.XM7','pfet_01v8','m'),
+                      ('M8','x1.XM8','pfet_01v8','m'),
+                      ('M9','x1.XM9','pfet_01v8','m'),
+                      ('M10','x1.XM10','pfet_01v8','m'),
+                      ('M11','x1.XM11','pfet_01v8','m'),
+                      ('M12','x1.XM12','nfet_01v8','m'),
+                      ('M13','x1.XM13','nfet_01v8','m'),
+                      ('M14','x1.XM14','nfet_01v8','m'),
+                      ('M15','x1.XM15','nfet_01v8','m'),
+                      ('M16','x1.XM16','nfet_01v8','m'),
+                      ('M17','x1.XM17','nfet_01v8','m'),
+                      ('M18','x1.XM18','nfet_01v8','m'),
+                      ('M19','x1.XM19','nfet_01v8','m'),
+                      ('M20','x1.XM20','nfet_01v8','m'),
+                      ('M21','x1.XM21','nfet_01v8','m'),
+                      ('M22','x1.XM22','nfet_01v8','m'),
+                      ('M23','x1.XM23','nfet_01v8','m'),
+
+                      ('Ib','','Ib','i'),
+                      ('C0','x1.XC0','cap_mim_m3_1','c'),
+                      ('C1','x1.XC1','cap_mim_m3_1','c')
+                     )    
+
+        self.op = {'M0':{},'M1':{},'M2':{},'M3':{},'M4':{},'M5':{},'M6':{},'M7':{},'M8':{}, 'M9':{},'M10':{},'M11':{},
+                'M12':{},'M13':{},'M14':{},'M15':{},'M16':{},'M17':{},'M18':{},'M19':{},'M20':{},'M21':{},'M22':{},'M23':{},
+                'Ib':{},'C0':{},'C1':{}}
+
+        self.edge_index = torch.tensor([
+          [0,1], [1,0], [0,2], [2,0], [0,3], [3,0], [0,4], [4,0], [0,7], [7,0], [0,11], [11,0], [0,24], [24,0], [0,25], [25,0], 
+          [1,2], [2,1], [1,3], [3,1], [1,4], [4,1], [1,7], [7,1], [1,11], [11,1], [1,25], [25,1], [1,12], [12,1], [1,24], [24,1], [1,17], [17,1], [1,18], [18,1], [1,19], [19,1], [1,20], [20,1],
+          [2,3], [3,2], [2,4], [4,2], [2,7], [7,2], [2,11], [11,2], [2,24], [24,2], [2,13], [13,2], [2,25], [25,2], 
+          [3,4], [4,3], [3,7], [7,3], [3,11], [11,3], [3,24], [24,3], [3,25], [25,3], [3,12], [12,3], [3,13], [13,3], [3,14], [14,3], [3,15], [15,3], [3,16], [16,3],           
+          [4,7], [7,4], [4,11], [11,4], [4,24], [24,4], [4,8], [8,4], [4,9], [9,4], [4,25], [25,4],
+          [5,6], [6,5], [5,15], [15,5], [5,25], [25,5], 
+          [6,15], [15,6], [6,16], [16,6], [6,10], [10,6], [6,25], [25,6], [6,27], [27,6],
+          [7,11], [11,7], [7,24], [24,7], [7,25], [25,7], [7,22], [22,7], [7,23], [23,7], [7,28], [28,7],
+          [8,9], [9,8], [8,15], [15,8], [8,19], [19,8], 
+          [9,16], [16,9], [9,20], [20,9],          
+          [10,16], [16,10], [10,21], [21,10], [10,22], [22,10], [10,25], [25,10], [10,27], [27,10],
+          [11,23], [23,11], [11,24], [24,11], [11,25], [25,11], [11,29], [29,11],
+          [12,13], [13,12], [12,14], [14,12], [12,15], [15,12], [12,16], [16,12], [12,17], [17,12], [12,18], [18,12], [12,19], [19,12], [12,20], [20,12],
+          [13,14], [14,13], [13,15], [15,13], [13,16], [16,13], [13,18], [18,13],  
+          [14,15], [15,14], [14,16], [16,14], [14,26], [26,14],  
+          [15,16], [16,15], [15,19], [19,15], 
+          [16,20], [20,16], [16,27], [27,16], 
+          [17,18], [18,17], [17,19], [19,17], [17,20], [20,17], [17,26], [26,17], 
+          [18,19], [19,18], [18,20], [20,18], [18,26], [26,18],          
+          [19,20], [20,19], [19,26], [26,19],          
+          [20,26], [26,20],          
+          [21,22], [22,21], [21,26], [26,21],          
+          [22,23], [23,22], [22,26], [26,22], [22,28], [28,22],         
+          [23,26], [26,23], [23,28], [28,23], [23,29], [29,23], 
+          [24,26], [26,24], 
+          [27,28], [28,27], [27,29], [29,27], 
+          [28,29], [29,28]
+            ], dtype=torch.long).t().to(self.device)
+        
+        self.edge_type = torch.tensor([
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1,             # M0
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,   # M1
+            0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1,                   # M2
+            0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, # M3
+            0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1,                         # M4
+            0, 0, 0, 0, 1, 1,                                           # M5
+            0, 0, 0, 0, 0, 0, 1, 1, 0, 0,                               # M6
+            0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0,                         # M7
+            0, 0, 0, 0, 0, 0,                                           # M8
+            0, 0, 0, 0,                                                 # M9
+            0, 0, 0, 0, 0, 0, 1, 1, 0, 0,                               # M10
+            0, 0, 1, 1, 1, 1, 0, 0,                                     # M11
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,             # M12
+            0, 0, 0, 0, 0, 0, 0, 0,                                     # M13
+            0, 0, 0, 0, 1, 1,                                           # M14
+            0, 0, 0, 0,                                                 # M15
+            0, 0, 0, 0,                                                 # M16
+            0, 0, 0, 0, 0, 0, 1, 1,                                     # M17
+            0, 0, 0, 0, 1, 1,                                           # M18
+            0, 0, 1, 1,                                                 # M19
+            1, 1,                                                       # M20
+            0, 0, 1, 1,                                                 # M21
+            0, 0, 1, 1, 0, 0,                                           # M22
+            1, 1, 0, 0, 0, 0,                                           # M23
+            1, 1,                                                       # Ib
+            0, 0, 0, 0,                                                 # C0
+            0, 0,                                                       # C1
+            ]).to(self.device)
+        
+        self.num_relations = 2
+        self.num_nodes = 30
+        self.num_node_features = 13
+        self.obs_shape = (self.num_nodes, self.num_node_features)
+
+        """Select an action from the input state."""
+
+        self.L_C1 = 30 
+        self.W_C1 = 30
+        M_C1_low = 1
+        M_C1_high = 30 
+        self.C1_low = M_C1_low * (self.L_C1 * self.W_C1 * 2e-15 + (self.L_C1 + self.W_C1)*0.38e-15)   # 1.823 pF
+        self.C1_high = M_C1_high * (self.L_C1 * self.W_C1 * 2e-15 + (self.L_C1 + self.W_C1)*0.38e-15) # 54.69 pF
+        
+        self.W_C0 = 30
+        self.L_C0 = 30
+        M_C0_low = 1
+        M_C0_high = 30
+        self.C0_low = M_C0_low * (self.L_C0 * self.W_C0 * 2e-15 + (self.L_C0 + self.W_C0) *0.38e-15)  # 1.823 pF
+        self.C0_high = M_C0_high * (self.L_C0 * self.W_C0 * 2e-15 + (self.L_C0 + self.W_C0)*0.38e-15) # 54.69 pF
+        
+        self.W_R0 = 0.35 # W: 0.35um
+        self.L_R0 = 3 # L: 3um
+        M_R0_low = 1
+        M_R0_high = 20
+        self.Rsheet = 1112.4
+        self.R0_low =  self.Rsheet * self.L_R0 / self.W_R0 / M_R0_high  # 476.7Ω
+        self.R0_high = self.Rsheet * self.L_R0 / self.W_R0 / M_R0_low   # 9534.8Ω
+
+        self.action_space_low = np.array([ 0.5, 0.5, 1, # M0(W_low,L_low,M_low)
+                                        0.5, 0.5, 1,    # M8
+                                        0.5, 0.5, 1,    # M10
+                                        0.5, 0.5, 1,    # M17
+                                        0.5, 0.5, 1,    # M21
+                                        0.5, 0.5, 1,    # M23
+                                        1e-6,           # Ib
+                                        M_C0_low,       # C0 : 1.823 pF
+                                        M_C1_low,       # C1 : 1.823 pF 
+                                        M_R0_low ])     # R0 : 476.7Ω
+        
+        self.action_space_high = np.array([10, 5, 50,  # M0(W_high,L_high,M_high) 
+                                        10, 5, 50,     # M8  
+                                        10, 5, 50,     # M10
+                                        10, 5, 50,     # M17
+                                        10, 5, 50,     # M21
+                                        10, 5, 50,     # M23
+                                        30e-6,         # Ib  
+                                        M_C0_high,     # C0: 54.69 pF
+                                        M_C1_high,     # C1: 54.69 pF
+                                        M_R0_high, ])  # R0: 9.5348 kΩ
+        
+        self.action_dim = len(self.action_space_low)
+        self.action_shape = (self.action_dim,)    
+        
+        """Some target specifications for the final design"""
+        self.phase_margin_target = 60 
+        self.CL = 100  #100pF
+        self.dcgain_target = 140
+        self.PSRP_target = -90
+        self.PSRN_target = -90 
+        self.cmrrdc_target = -90
+        self.vos_target = 0.06e-3   
+        self.TC_target = 10e-6
+        self.settlingTime_target = 1e-6
+        self.FOML_target = 200
+        self.FOMS_target = 833
+        self.Active_Area_target = 160
+        self.Power_target = 0.3
+        self.GBW_target = 2.5e6
+        self.sr_target = 0.6
+
+        """ baseline """
+        self.PSRR_base = -60
+        self.cmrrdc_base = -60
+        self.dcgain_base = 90
+        self.FOML_base = 20
+        self.FOMS_base = 200
+        self.settlingTime_base = 5e-6
+        self.Active_Area_base = 500
+        self.TC_base = 50e-6
+        self.vos_base = 0.1e-3    
+        self.Power_base = 0.5
+        self.sr_base = 0.1
+        self.GBW_base = 1e6
+
+        self.GND = 0
+        self.Vdd = 1.8      
+
+class GraphAMPSMC:
+    """                                                                                                                           
+    node 0 : M0 , node 1 : M1 , node 2 : M2 , node 3 : M3 , node 4 : M4 , node 5 : M5
+    node 6 : M6 , node 7 : M7 , node 8 : M8 , node 9 : M9 , node 10 : M10 , node 11 : M11
+    node 12 : M12 , node 13 : M13 , node 14 : M14 , node 15 : M15 , node 16 : M16 , node17 : M17 ,
+    node 18 : M18 , node 19 : M19 , node 20 : M20 , node 21 : M21 , node 22 : M22 ,   
+    node23 : M23 , node24 : Ib , node25 : VDD , node26 : GND , node27 : C0 
+    """
+    def __init__(self):        
+        # self.device = torch.device(
+        #     "cuda:0" if torch.cuda.is_available() else "cpu"
+        # )
+        
+        self.device = torch.device(
+           "cpu"
+        )
+        self.ckt_hierarchy = (
+                      ('M0','x1.XM0','pfet_01v8','m'),
+                      ('M1','x1.XM1','pfet_01v8','m'),
+                      ('M2','x1.XM2','pfet_01v8','m'),
+                      ('M3','x1.XM3','pfet_01v8','m'),
+                      ('M4','x1.XM4','pfet_01v8','m'),
+                      ('M5','x1.XM5','pfet_01v8','m'),
+                      ('M6','x1.XM6','pfet_01v8','m'),
+                      ('M7','x1.XM7','pfet_01v8','m'),
+                      ('M8','x1.XM8','pfet_01v8','m'),
+                      ('M9','x1.XM9','pfet_01v8','m'),
+                      ('M10','x1.XM10','pfet_01v8','m'),
+                      ('M11','x1.XM11','pfet_01v8','m'),
+                      ('M12','x1.XM12','nfet_01v8','m'),
+                      ('M13','x1.XM13','nfet_01v8','m'),
+                      ('M14','x1.XM14','nfet_01v8','m'),
+                      ('M15','x1.XM15','nfet_01v8','m'),
+                      ('M16','x1.XM16','nfet_01v8','m'),
+                      ('M17','x1.XM17','nfet_01v8','m'),
+                      ('M18','x1.XM18','nfet_01v8','m'),
+                      ('M19','x1.XM19','nfet_01v8','m'),
+                      ('M20','x1.XM20','nfet_01v8','m'),
+                      ('M21','x1.XM21','nfet_01v8','m'),
+                      ('M22','x1.XM22','nfet_01v8','m'),
+                      ('M23','x1.XM23','nfet_01v8','m'),
+
+                      ('Ib','','Ib','i'),
+                      ('C0','x1.XC0','cap_mim_m3_1','c'),
+                     )    
+
+        self.op = {'M0':{},'M1':{},'M2':{},'M3':{},'M4':{},'M5':{},'M6':{},'M7':{},'M8':{}, 'M9':{},'M10':{},'M11':{},
+                'M12':{},'M13':{},'M14':{},'M15':{},'M16':{},'M17':{},'M18':{},'M19':{},'M20':{},'M21':{},'M22':{},'M23':{},
+                'Ib':{},'C0':{}}
+
+        self.edge_index = torch.tensor([
+          [0,1], [1,0], [0,2], [2,0], [0,3], [3,0], [0,4], [4,0], [0,7], [7,0], [0,24], [24,0], [0,25], [25,0], 
+          [1,2], [2,1], [1,3], [3,1], [1,4], [4,1], [1,7], [7,1], [1,25], [25,1], [1,12], [12,1], [1,24], [24,1], [1,17], [17,1], [1,18], [18,1], [1,19], [19,1], [1,20], [20,1], 
+          [2,3], [3,2], [2,4], [4,2], [2,7], [7,2], [2,24], [24,2], [2,13], [13,2], [2,25], [25,2],  
+          [3,4], [4,3], [3,7], [7,3], [3,24], [24,3], [3,25], [25,3], [3,12], [12,3], [3,13], [13,3], [3,14], [14,3], [3,15], [15,3], [3,16], [16,3], 
+          [4,7], [7,4], [4,24], [24,4], [4,8], [8,4], [4,9], [9,4], [4,25], [25,4],
+          [5,6], [6,5], [5,15], [15,5], [5,25], [25,5], 
+          [6,15], [15,6], [6,16], [16,6], [6,10], [10,6], [6,11], [11,6], [6,25], [25,6], [6,27], [27,6], 
+          [7,24], [24,7], [7,25], [25,7], [7,22], [22,7], [7,23], [23,7],
+          [8,9], [9,8], [8,15], [15,8], [8,19], [19,8], 
+          [9,16], [16,9], [9,20], [20,9], 
+          [10,11], [11,10], [10,16], [16,10], [10,21], [21,10], [10,22], [22,10], [10,25], [25,10], [10,27], [27,10],
+          [11,25], [25,11], [11,16], [16,11], [11,23], [23,11], [11,27], [27,11], 
+          [12,13], [13,12], [12,14], [14,12], [12,15], [15,12], [12,16], [16,12], [12,17], [17,12], [12,18], [18,12], [12,19], [19,12], [12,20], [20,12], 
+          [13,14], [14,13], [13,15], [15,13], [13,16], [16,13], [13,18], [18,13],
+          [14,15], [15,14], [14,16], [16,14], [14,26], [26,14],  
+          [15,16], [16,15], [15,19], [19,15], 
+          [16,20], [20,16], [16,27], [27,16], 
+          [17,18], [18,17], [17,19], [19,17], [17,20], [20,17], [17,26], [26,17], 
+          [18,19], [19,18], [18,20], [20,18], [18,26], [26,18],
+          [19,20], [20,19], [19,26], [26,19], 
+          [20,26], [26,20], 
+          [21,22], [22,21], [21,26], [26,21], 
+          [22,23], [23,22], [22,26], [26,22], 
+          [23,26], [26,23], [23,27], [27,23], 
+          [24,26], [26,24]
+            ], dtype=torch.long).t().to(self.device)
+        
+        self.edge_type = torch.tensor([
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1,             # M0
+            0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,   # M1
+            0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1,                   # M2
+            0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, # M3
+            0, 0, 1, 1, 0, 0, 0, 0, 1, 1,                         # M4
+            0, 0, 0, 0, 1, 1,                                     # M5
+            0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0,                   # M6
+            1, 1, 1, 1, 0, 0, 0, 0,                               # M7
+            0, 0, 0, 0, 0, 0,                                     # M8
+            0, 0, 0, 0,                                           # M9
+            0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0,                   # M10
+            1, 1, 0, 0, 0, 0, 0, 0,                               # M11
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,       # M12
+            0, 0, 0, 0, 0, 0, 0, 0,                               # M13
+            0, 0, 0, 0, 1, 1,                                     # M14
+            0, 0, 0, 0,                                           # M15
+            0, 0, 0, 0,                                           # M16
+            0, 0, 0, 0, 0, 0, 1, 1,                               # M17
+            0, 0, 0, 0, 1, 1,                                     # M18
+            0, 0, 1, 1,                                           # M19
+            1, 1,                                                 # M20
+            0, 0, 1, 1,                                           # M21
+            0, 0, 1, 1,                                           # M22
+            1, 1, 0, 0,                                           # M23
+            1, 1,                                                 # Ib
+            ]).to(self.device)
+        
+        self.num_relations = 2
+        self.num_nodes = 28
+        self.num_node_features = 11
+        self.obs_shape = (self.num_nodes, self.num_node_features)
+
+        """Select an action from the input state."""
+        
+        self.W_C0 = 30
+        self.L_C0 = 30
+        M_C0_low = 1
+        M_C0_high = 30
+        self.C0_low = M_C0_low * (self.L_C0 * self.W_C0 * 2e-15 + (self.L_C0 + self.W_C0) *0.38e-15)  # 1.823 pF
+        self.C0_high = M_C0_high * (self.L_C0 * self.W_C0 * 2e-15 + (self.L_C0 + self.W_C0)*0.38e-15) # 91.14 pF
+        
+        self.action_space_low = np.array([ 0.5, 0.5, 1, # M0(W_low,L_low,M_low)
+                                        0.5, 0.5, 1,    # M8
+                                        0.5, 0.5, 1,    # M10
+                                        0.5, 0.5, 100,   # M11
+                                        0.5, 0.5, 1,    # M17
+                                        0.5, 0.5, 1,    # M21
+                                        0.5, 0.5, 1,    # M23
+                                        1e-6,           # Ib
+                                        M_C0_low, ])    # C0 
+        
+        self.action_space_high = np.array([10, 5, 50,  # M0(W_high,L_high,M_high) 
+                                        10, 5, 50,     # M8  
+                                        10, 5, 50,     # M10
+                                        10, 5, 500,    # M11
+                                        10, 5, 50,     # M17
+                                        10, 5, 50,     # M21
+                                        10, 5, 50,     # M23
+                                        30e-6,         # Ib  
+                                        M_C0_high,])   # C0:30
+        
+        self.action_dim = len(self.action_space_low)
+        self.action_shape = (self.action_dim,)    
+
+        """Some target specifications for the final design"""
+        self.phase_margin_target = 60 
+        self.CL = 120       #120pF
+        self.dcgain_target = 130
+        self.PSRP_target = -80
+        self.PSRN_target = -80 
+        self.cmrrdc_target = -80
+        self.vos_target = 0.06e-3   
+        self.TC_target = 10e-6
+        self.settlingTime_target = 1e-6
+        self.FOML_target = 200
+        self.FOMS_target = 600
+        self.Active_Area_target = 80
+        self.Power_target = 0.2
+        self.GBW_target = 1.5e6
+        self.sr_target = 0.4
+
+        """ baseline """
+        self.PSRR_base = -60
+        self.cmrrdc_base = -60
+        self.dcgain_base = 90
+        self.FOMS_base = 500
+        self.FOML_base = 100
+        self.settlingTime_base = 5e-6
+        self.Active_Area_base = 100
+        self.TC_base = 50e-6
+        self.vos_base = 0.1e-3
+        self.Power_base = 0.3
+        self.sr_base = 0.25
+        self.GBW_base = 1.25e6
+    
+        self.GND = 0
+        self.Vdd = 1.8
+        self.rew_eng = True        
+
+class GraphAMPPFC:
+    """                                                                                                                           
+    node 0 : M0 , node 1 : M1 , node 2 : M2 , node 3 : M3 , node 4 : M4 , node 5 : M5
+    node 6 : M6 , node 7 : M7 , node 8 : M8 , node 9 : M9 , node 10 : M10 , node 11 : M11
+    node 12 : M12 , node 13 : M13 , node 14 : M14 , node 15 : M15 , node 16 : M16 , node17 : M17 ,
+    node 18 : M18 , node 19 : M19 , node 20 : M20 , node 21 : M21 , node 22 : M22 ,   
+    node23 : M23 , node24 : Ib , node25 : VDD , node26 : GND , node27 : C0 , node28 : C1
+    """
+    def __init__(self):        
+        # self.device = torch.device(
+        #     "cuda:0" if torch.cuda.is_available() else "cpu"
+        # )
+        
+        self.device = torch.device(
+           "cpu"
+        )
+        self.ckt_hierarchy = (
+                      ('M0','x1.XM0','pfet_01v8','m'),
+                      ('M1','x1.XM1','pfet_01v8','m'),
+                      ('M2','x1.XM2','pfet_01v8','m'),
+                      ('M3','x1.XM3','pfet_01v8','m'),
+                      ('M4','x1.XM4','pfet_01v8','m'),
+                      ('M5','x1.XM5','pfet_01v8','m'),
+                      ('M6','x1.XM6','pfet_01v8','m'),
+                      ('M7','x1.XM7','pfet_01v8','m'),
+                      ('M8','x1.XM8','pfet_01v8','m'),
+                      ('M9','x1.XM9','pfet_01v8','m'),
+                      ('M10','x1.XM10','pfet_01v8','m'),
+                      ('M11','x1.XM11','pfet_01v8','m'),
+                      ('M12','x1.XM12','nfet_01v8','m'),
+                      ('M13','x1.XM13','nfet_01v8','m'),
+                      ('M14','x1.XM14','nfet_01v8','m'),
+                      ('M15','x1.XM15','nfet_01v8','m'),
+                      ('M16','x1.XM16','nfet_01v8','m'),
+                      ('M17','x1.XM17','nfet_01v8','m'),
+                      ('M18','x1.XM18','nfet_01v8','m'),
+                      ('M19','x1.XM19','nfet_01v8','m'),
+                      ('M20','x1.XM20','nfet_01v8','m'),
+                      ('M21','x1.XM21','nfet_01v8','m'),
+                      ('M22','x1.XM22','nfet_01v8','m'),
+                      ('M23','x1.XM23','nfet_01v8','m'),
+
+                      ('Ib','','Ib','i'),
+                      ('C0','x1.XC0','cap_mim_m3_1','c'),
+                      ('C1','x1.XC1','cap_mim_m3_1','c')
+                     )    
+
+        self.op = {'M0':{},'M1':{},'M2':{},'M3':{},'M4':{},'M5':{},'M6':{},'M7':{},'M8':{}, 'M9':{},'M10':{},'M11':{},
+                'M12':{},'M13':{},'M14':{},'M15':{},'M16':{},'M17':{},'M18':{},'M19':{},'M20':{},'M21':{},'M22':{},'M23':{},
+                'Ib':{},'C0':{},'C1':{}}
+
+        self.edge_index = torch.tensor([
+          [0,1], [1,0], [0,2], [2,0], [0,3], [3,0], [0,4], [4,0], [0,7], [7,0], [0,24], [24,0], [0,25], [25,0], 
+          [1,2], [2,1], [1,3], [3,1], [1,4], [4,1], [1,7], [7,1], [1,25], [25,1], [1,12], [12,1], [1,24], [24,1], [1,17], [17,1], [1,18], [18,1], [1,19], [19,1], [1,20], [20,1], 
+          [2,3], [3,2], [2,4], [4,2], [2,7], [7,2], [2,24], [24,2], [2,13], [13,2], [2,25], [25,2],       
+          [3,4], [4,3], [3,7], [7,3], [3,24], [24,3], [3,25], [25,3], [3,12], [12,3], [3,13], [13,3], [3,14], [14,3], [3,15], [15,3], [3,16], [16,3], 
+          [4,7], [7,4], [4,24], [24,4], [4,8], [8,4], [4,9], [9,4], [4,25], [25,4],         
+          [5,6], [6,5], [5,15], [15,5], [5,25], [25,5],          
+          [6,15], [15,6], [6,16], [16,6], [6,10], [10,6], [6,11], [11,6], [6,25], [25,6], [6,27], [27,6], [6,28], [28,6],
+          [7,24], [24,7], [7,25], [25,7], [7,22], [22,7], [7,23], [23,7], [7,28], [28,7],
+          [8,9], [9,8], [8,15], [15,8], [8,19], [19,8],           
+          [9,16], [16,9], [9,20], [20,9],           
+          [10,11], [11,10], [10,16], [16,10], [10,21], [21,10], [10,22], [22,10], [10,25], [25,10], [10,27], [27,10], [10,28], [28,10],
+          [11,25], [25,11], [11,16], [16,11], [11,23], [23,11], [11,27], [27,11], [11,28], [28,11],  
+          [12,13], [13,12], [12,14], [14,12], [12,15], [15,12], [12,16], [16,12], [12,17], [17,12], [12,18], [18,12], [12,19], [19,12], [12,20], [20,12],          
+          [13,14], [14,13], [13,15], [15,13], [13,16], [16,13], [13,18], [18,13],  
+          [14,15], [15,14], [14,16], [16,14], [14,26], [26,14],       
+          [15,16], [16,15], [15,19], [19,15],          
+          [16,20], [20,16], [16,27], [27,16], [16,28], [28,16], 
+          [17,18], [18,17], [17,19], [19,17], [17,20], [20,17], [17,26], [26,17],           
+          [18,19], [19,18], [18,20], [20,18], [18,26], [26,18],         
+          [19,20], [20,19], [19,26], [26,19],          
+          [20,26], [26,20],           
+          [21,22], [22,21], [21,26], [26,21],          
+          [22,23], [23,22], [22,26], [26,22], [22,28], [28,22],         
+          [23,26], [26,23], [23,27], [27,23], [23,28], [28,23],     
+          [24,26], [26,24], 
+          [27,28], [28,27]
+            ], dtype=torch.long).t().to(self.device)
+        
+        self.edge_type = torch.tensor([
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1,             # M0
+            0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,   # M1
+            0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1,                   # M2
+            0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, # M3
+            0, 0, 1, 1, 0, 0, 0, 0, 1, 1,                         # M4
+            0, 0, 0, 0, 1, 1,                                     # M5
+            0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0,             # M6
+            1, 1, 1, 1, 0, 0, 0, 0, 0, 0,                         # M7
+            0, 0, 0, 0, 0, 0,                                     # M8
+            0, 0, 0, 0,                                           # M9
+            0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0,             # M10
+            1, 1, 0, 0, 0, 0, 0, 0, 0, 0,                         # M11
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,       # M12
+            0, 0, 0, 0, 0, 0, 0, 0,                               # M13
+            0, 0, 0, 0, 1, 1,                                     # M14
+            0, 0, 0, 0,                                           # M15
+            0, 0, 0, 0, 0, 0,                                     # M16
+            0, 0, 0, 0, 0, 0, 1, 1,                               # M17
+            0, 0, 0, 0, 1, 1,                                     # M18
+            0, 0, 1, 1,                                           # M19
+            1, 1,                                                 # M20
+            0, 0, 1, 1,                                           # M21
+            0, 0, 1, 1, 0, 0,                                     # M22
+            1, 1, 0, 0, 0, 0,                                     # M23
+            1, 1,                                                 # Ib
+            0, 0,                                                 # C0
+            ]).to(self.device)
+        
+        self.num_relations = 2
+        self.num_nodes = 29
+        self.num_node_features = 12
+        self.obs_shape = (self.num_nodes, self.num_node_features)
+
+        """Select an action from the input state."""
+
+        self.L_C1 = 30 
+        self.W_C1 = 30
+        M_C1_low = 1
+        M_C1_high = 30 
+        self.C1_low = M_C1_low * (self.L_C1 * self.W_C1 * 2e-15 + (self.L_C1 + self.W_C1)*0.38e-15)   # 1.823pF
+        self.C1_high = M_C1_high * (self.L_C1 * self.W_C1 * 2e-15 + (self.L_C1 + self.W_C1)*0.38e-15) # 54.69pF
+        
+        self.W_C0 = 30
+        self.L_C0 = 30
+        M_C0_low = 1
+        M_C0_high = 30
+        self.C0_low = M_C0_low * (self.L_C0 * self.W_C0 * 2e-15 + (self.L_C0 + self.W_C0) *0.38e-15)  # 1.823pF
+        self.C0_high = M_C0_high * (self.L_C0 * self.W_C0 * 2e-15 + (self.L_C0 + self.W_C0)*0.38e-15) # 54.69pF
+        
+        self.action_space_low = np.array([ 0.5, 0.5, 1, # M0(W_low,L_low,M_low)
+                                        0.5, 0.5, 1,    # M8
+                                        0.5, 0.5, 1,    # M10
+                                        0.5, 0.5, 100,  # M11
+                                        0.5, 0.5, 1,    # M17
+                                        0.5, 0.5, 1,    # M21
+                                        0.5, 0.5, 1,    # M23
+                                        1e-6,           # Ib
+                                        M_C0_low,       # C0: 1.823pF
+                                        M_C1_low])      # C1: 1.823pF
+        
+        self.action_space_high = np.array([10, 5, 50,  # M0(W_high,L_high,M_high) 
+                                        10, 5, 50,     # M8  
+                                        10, 5, 50,     # M10
+                                        10, 5, 500,    # M11
+                                        10, 5, 50,     # M17
+                                        10, 5, 50,     # M21
+                                        10, 5, 50,     # M23
+                                        30e-6,         # Ib  
+                                        M_C0_high,     # C0: 54.69pF
+                                        M_C1_high])    # C1: 54.69pF
+        
+        self.action_dim = len(self.action_space_low)
+        self.action_shape = (self.action_dim,)    
+        
+        """Some target specifications for the final design"""
+        self.phase_margin_target = 60 
+        self.CL = 130       #130pF
+        self.dcgain_target = 130
+        self.PSRP_target = -80
+        self.PSRN_target = -80 
+        self.cmrrdc_target = -80
+        self.vos_target = 0.06e-3   
+        self.TC_target = 10e-6
+        self.settlingTime_target = 1e-6
+        self.FOML_target = 175
+        self.FOMS_target = 450
+        self.Active_Area_target = 200
+        self.Power_target = 0.3
+        self.GBW_target = 1e6
+        self.sr_target = 0.4
+
+        """ baseline """
+        self.PSRR_base = -60
+        self.cmrrdc_base = -60
+        self.dcgain_base = 90
+        self.FOMS_base = 100
+        self.FOML_base = 50
+        self.settlingTime_base = 5e-6
+        self.Active_Area_base = 300
+        self.TC_base = 50e-6
+        self.vos_base = 0.1e-3
+        self.Power_base = 0.5
+        self.sr_base = 0.2
+        self.GBW_base = 0.4e6
+    
+        self.GND = 0
+        self.Vdd = 1.8    
+
+class GraphAMPACBC:
+    """                                                                                                                           
+    node 0 : M0 , node 1 : M1 , node 2 : M2 , node 3 : M3 , node 4 : M4 , node 5 : M5
+    node 6 : M6 , node 7 : M7 , node 8 : M8 , node 9 : M9 , node 10 : M10 , node 11 : M11
+    node 12 : M12 , node 13 : M13 , node 14 : M14 , node 15 : M15 , node 16 : M16 , node17 : M17 ,
+    node 18 : M18 , node 19 : M19 , node 20 : M20 , node 21 : M21 , node 22 : M22 ,   
+    node23 : M23 , node24: M24, node25: M25, node26 : Ib , node27 : VDD , node28 : GND , 
+    node29 : C0 , node30 : C1 , node31 : M59
+    """
+    def __init__(self):        
+        # self.device = torch.device(
+        #     "cuda:0" if torch.cuda.is_available() else "cpu"
+        # )
+        
+        self.device = torch.device(
+           "cpu"
+        )
+        self.ckt_hierarchy = (
+                      ('M0','x1.XM0','pfet_01v8','m'),
+                      ('M1','x1.XM1','pfet_01v8','m'),
+                      ('M2','x1.XM2','pfet_01v8','m'),
+                      ('M3','x1.XM3','pfet_01v8','m'),
+                      ('M4','x1.XM4','pfet_01v8','m'),
+                      ('M5','x1.XM5','pfet_01v8','m'),
+                      ('M6','x1.XM6','pfet_01v8','m'),
+                      ('M7','x1.XM7','pfet_01v8','m'),
+                      ('M8','x1.XM8','pfet_01v8','m'),
+                      ('M9','x1.XM9','pfet_01v8','m'),
+                      ('M10','x1.XM10','pfet_01v8','m'),
+                      ('M11','x1.XM11','pfet_01v8','m'),
+                      ('M12','x1.XM12','pfet_01v8','m'),
+
+                      ('M13','x1.XM13','nfet_01v8','m'),
+                      ('M14','x1.XM14','nfet_01v8','m'),
+                      ('M15','x1.XM15','nfet_01v8','m'),
+                      ('M16','x1.XM16','nfet_01v8','m'),
+                      ('M17','x1.XM17','nfet_01v8','m'),
+                      ('M18','x1.XM18','nfet_01v8','m'),
+                      ('M19','x1.XM19','nfet_01v8','m'),
+                      ('M20','x1.XM20','nfet_01v8','m'),
+                      ('M21','x1.XM21','nfet_01v8','m'),
+                      ('M22','x1.XM22','nfet_01v8','m'),
+                      ('M23','x1.XM23','nfet_01v8','m'),
+                      ('M24','x1.XM24','nfet_01v8','m'),
+                      ('M25','x1.XM25','nfet_01v8','m'),
+
+                      ('M59','x1.XM59','pfet_01v8','m'),
+
+                      ('Ib','','Ib','i'),
+                      ('C0','x1.XC0','cap_mim_m3_1','c'),
+                      ('C1','x1.XC1','cap_mim_m3_1','c')
+                     )    
+
+        self.op = {'M0':{},'M1':{},'M2':{},'M3':{},'M4':{},'M5':{},'M6':{},'M7':{},'M8':{}, 'M9':{},'M10':{},'M11':{},'M12':{},
+                'M13':{},'M14':{},'M15':{},'M16':{},'M17':{},'M18':{},'M19':{},'M20':{},'M21':{},'M22':{},'M23':{},'M24':{},'M25':{},'M59':{},
+                'Ib':{},'C0':{},'C1':{}}
+
+        self.edge_index = torch.tensor([
+          [0,1], [1,0], [0,2], [2,0], [0,3], [3,0], [0,4], [4,0], [0,7], [7,0], [0,8], [8,0], [0,27], [27,0], [0,26], [26,0], 
+          [1,2], [2,1], [1,3], [3,1], [1,4], [4,1], [1,7], [7,1], [1,8], [8,1], [1,26], [26,1], [1,13], [13,1], [1,27], [27,1], [1,18], [18,1], [1,19], [19,1], [1,20], [20,1], [1,21], [21,1], 
+          [2,3], [3,2], [2,4], [4,2], [2,7], [7,2], [2,8], [8,2], [2,27], [27,2], [2,14], [14,2], [2,26], [26,2],  
+          [3,4], [4,3], [3,7], [7,3], [3,8], [8,3], [3,26], [26,3], [3,27], [27,3], [3,13], [13,3], [3,14], [14,3], [3,15], [15,3], [3,16], [16,3], [3,17], [17,3], 
+          [4,7], [7,4], [4,8], [8,4], [4,26], [26,4], [4,27], [27,4], [4,9], [9,4], [4,10], [10,4],
+          [5,6], [6,5], [5,16], [16,5], [5,27], [27,5], 
+          [6,16], [16,6], [6,17], [17,6], [6,11], [11,6], [6,12], [12,6], [6,27], [27,6], [6,29], [29,6], 
+          [7,8], [8,7], [7,26], [26,7], [7,27], [27,7], [7,23], [23,7], [7,25], [25,7], [7,30], [30,7],
+          [8,24], [24,8], [8,30], [30,8], [8,26], [26,8], [8,27], [27,8], [8,31], [31,8], 
+          [9,16], [16,9], [9,20], [20,9], [9,10] ,[10,9],
+          [10,17], [17,10], [10,21], [21,10],
+          [11,22], [22,11], [11,23], [23,11], [11,24], [24,11], [11,12], [12,11], [11,17], [17,11], [11,29], [29,11], [11,27], [27,11],
+          [12,25], [25,12], [12,29], [29,12], [12,17], [17,12], [12,27], [27,12],
+          [13,18], [18,13], [13,19], [19,13], [13,20], [20,13], [13,21], [21,13], [13,14], [14,13], [13,15], [15,13], [13,16], [16,13], [13,17], [17,13],             
+          [14,15], [15,14], [14,16], [16,14], [14,17], [17,14], [14,19], [19,14],    
+          [15,16], [16,15], [15,17], [17,15], [15,28], [16,28],          
+          [16,17], [17,16], [16,20], [20,16],          
+          [17,29], [29,17], [17,21], [21,17],                    
+          [18,19], [19,18], [18,20], [20,18], [18,21], [21,18], [18,28], [28,18],           
+          [19,20], [20,19], [19,21], [21,19], [19,28], [28,19],         
+          [20,21], [21,20], [20,28], [28,20],         
+          [21,28], [28,21],         
+          [22,23], [23,22], [22,24], [24,22], [22,28], [28,22], 
+          [23,24], [24,23], [23,25], [25,23], [23,30], [30,23], [23,28], [28,23],           
+          [24,30], [30,24], [24,31], [31,24], [24,28], [28,24], 
+          [25,29], [29,25], [25,30], [30,25], [25,28], [28,25],       
+          [26,28], [28,26],
+          [27,31], [31,27],
+          [30,31], [31,30]
+            ], dtype=torch.long).t().to(self.device)
+        
+        self.edge_type = torch.tensor([
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1,             # M0
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,   # M1
+            0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1,                   # M2
+            0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, # M3
+            0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0,                         # M4
+            0, 0, 0, 0, 1, 1,                                           # M5
+            0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0,                         # M6
+            0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0,                         # M7
+            0, 0, 0, 0, 1, 1, 1, 1, 0, 0,                               # M8
+            0, 0, 0, 0, 0, 0,                                           # M9
+            0, 0, 0, 0,                                                 # M10
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1,                   # M11
+            0, 0, 0, 0, 0, 0, 1, 1,                                     # M12
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,             # M13
+            0, 0, 0, 0, 0, 0, 0, 0,                                     # M14
+            0, 0, 0, 0, 1, 1,                                           # M15
+            0, 0, 0, 0,                                                 # M16
+            0, 0, 0, 0,                                                 # M17
+            0, 0, 0, 0, 0, 0, 1, 1,                                     # M18
+            0, 0, 0, 0, 1, 1,                                           # M19
+            0, 0, 1, 1,                                                 # M20
+            1, 1,                                                       # M21
+            0, 0, 0, 0, 1, 1,                                           # M22 
+            0, 0, 0, 0, 0, 0, 1, 1,                                     # M23
+            0, 0, 0, 0, 1, 1,                                           # M24
+            0, 0, 0, 0, 1, 1,                                           # M25
+            1, 1,                                                       # Ib
+            1, 1,                                                       # VDD
+            0, 0,                                                       # C1
+            ]).to(self.device)
+        
+        self.num_relations = 2
+        self.num_nodes = 32
+        self.num_node_features = 12
+        self.obs_shape = (self.num_nodes, self.num_node_features)
+
+        """Select an action from the input state."""
+
+        self.L_C1 = 20 
+        self.W_C1 = 20
+        M_C1_low = 1
+        M_C1_high = 30 
+        self.C1_low = M_C1_low * (self.L_C1 * self.W_C1 * 2e-15 + (self.L_C1 + self.W_C1)*0.38e-15)   # 0.8152pF
+        self.C1_high = M_C1_high * (self.L_C1 * self.W_C1 * 2e-15 + (self.L_C1 + self.W_C1)*0.38e-15) # 24.456pF
+        
+        self.W_C0 = 30
+        self.L_C0 = 30
+        M_C0_low = 1
+        M_C0_high = 30
+        self.C0_low = M_C0_low * (self.L_C0 * self.W_C0 * 2e-15 + (self.L_C0 + self.W_C0) *0.38e-15)  # 1.823pF
+        self.C0_high = M_C0_high * (self.L_C0 * self.W_C0 * 2e-15 + (self.L_C0 + self.W_C0)*0.38e-15) # 54.69pF
+        
+        self.action_space_low = np.array([ 0.5, 0.5, 1, # M0(W_low,L_low,M_low)
+                                        0.5, 0.5, 1,    # M9
+                                        0.5, 0.5, 1,    # M11
+                                        0.5, 0.5, 100,  # M12
+                                        0.5, 0.5, 1,    # M17
+                                        0.5, 0.5, 1,    # M18
+                                        0.5, 0.5, 1,    # M22
+                                        0.5, 0.5, 1,    # M24
+                                        0.5, 0.5, 1,    # M25
+                                        0.5, 0.5, 1,    # M59
+                                        1e-6,           # Ib
+                                        M_C0_low,       # C0:1
+                                        M_C1_low])      # C1:1
+        
+        self.action_space_high = np.array([10, 5, 50,  # M0(W_high,L_high,M_high) 
+                                        10, 5, 50,     # M9  
+                                        10, 5, 50,     # M11
+                                        10, 5, 500,    # M12
+                                        10, 5, 50,     # M17
+                                        10, 5, 50,     # M18
+                                        10, 5, 50,     # M22
+                                        10, 5, 50,     # M24
+                                        10, 5, 50,     # M25
+                                        10, 5, 50,     # M59
+                                        30e-6,         # Ib  
+                                        M_C0_high,     # C0:30
+                                        M_C1_high])    # C1:30
+        
+        self.action_dim = len(self.action_space_low)
+        self.action_shape = (self.action_dim,)    
+        
+        """Some target specifications for the final design"""
+        self.phase_margin_target = 60 
+        self.CL = 500  #100pF
+        self.dcgain_target = 130
+        self.PSRP_target = -80
+        self.PSRN_target = -80 
+        self.cmrrdc_target = -80
+        self.vos_target = 0.06e-3   
+        self.TC_target = 10e-6
+        self.settlingTime_target = 1e-6
+        self.FOML_target = 1000
+        self.FOMS_target = 2500
+        self.Active_Area_target = 80
+        self.Power_target = 0.2
+        self.GBW_target = 1e6
+        self.sr_target = 0.4
+
+        """ baseline """
+        self.PSRR_base = -60
+        self.cmrrdc_base = -60
+        self.dcgain_base = 90
+        self.FOML_base = 100
+        self.FOMS_base = 300
+        self.settlingTime_base = 5e-6
+        self.Active_Area_base = 100
+        self.TC_base = 50e-6
+        self.vos_base = 0.1e-3    
+        self.Power_base = 1
+        self.sr_base = 0.2
+        self.GBW_base = 0.6e6
+
+        self.GND = 0
+        self.Vdd = 1.8
+        
+        self.rew_eng = True        
+
+class GraphAMPCFCC:
+    """                                                                                                                           
+    node 0 : M0 , node 1 : M1 , node 2 : M2 , node 3 : M3 , node 4 : M4 , node 5 : M5
+    node 6 : M6 , node 7 : M7 , node 8 : M8 , node 9 : M9 , node 10 : M10 , node 11 : M11
+    node 12 : M12 , node 13 : M13 , node 14 : M14 , node 15 : M15 , node 16 : M16 , node17 : M17 ,
+    node 18 : M18 , node 19 : M19 , node 20 : M20 , node 21 : M21 , node 22 : M22 ,   
+    node23 : M23 , node24 : Ib , node25 : VDD , node26 : GND , node27 : C0 
+    """
+    def __init__(self):        
+        # self.device = torch.device(
+        #     "cuda:0" if torch.cuda.is_available() else "cpu"
+        # )
+        
+        self.device = torch.device(
+           "cpu"
+        )
+        self.ckt_hierarchy = (
+                      ('M0','x1.XM0','pfet_01v8','m'),
+                      ('M1','x1.XM1','pfet_01v8','m'),
+                      ('M2','x1.XM2','pfet_01v8','m'),
+                      ('M3','x1.XM3','pfet_01v8','m'),
+                      ('M4','x1.XM4','pfet_01v8','m'),
+                      ('M5','x1.XM5','pfet_01v8','m'),
+                      ('M6','x1.XM6','pfet_01v8','m'),
+                      ('M7','x1.XM7','pfet_01v8','m'),
+                      ('M8','x1.XM8','pfet_01v8','m'),
+                      ('M9','x1.XM9','pfet_01v8','m'),
+                      ('M10','x1.XM10','pfet_01v8','m'),
+                      ('M11','x1.XM11','pfet_01v8','m'),
+                      ('M12','x1.XM12','nfet_01v8','m'),
+                      ('M13','x1.XM13','nfet_01v8','m'),
+                      ('M14','x1.XM14','nfet_01v8','m'),
+                      ('M15','x1.XM15','nfet_01v8','m'),
+                      ('M16','x1.XM16','nfet_01v8','m'),
+                      ('M17','x1.XM17','nfet_01v8','m'),
+                      ('M18','x1.XM18','nfet_01v8','m'),
+                      ('M19','x1.XM19','nfet_01v8','m'),
+                      ('M20','x1.XM20','nfet_01v8','m'),
+                      ('M21','x1.XM21','nfet_01v8','m'),
+                      ('M22','x1.XM22','nfet_01v8','m'),
+                      ('M23','x1.XM23','nfet_01v8','m'),
+
+                      ('Ib','','Ib','i'),
+                      ('C0','x1.XC0','cap_mim_m3_1','c'),
+                     )    
+
+        self.op = {'M0':{},'M1':{},'M2':{},'M3':{},'M4':{},'M5':{},'M6':{},'M7':{},'M8':{}, 'M9':{},'M10':{},'M11':{},
+                'M12':{},'M13':{},'M14':{},'M15':{},'M16':{},'M17':{},'M18':{},'M19':{},'M20':{},'M21':{},'M22':{},'M23':{},
+                'Ib':{},'C0':{}}
+
+        self.edge_index = torch.tensor([
+          [0,1], [1,0], [0,2], [2,0], [0,3], [3,0], [0,4], [4,0], [0,24], [24,0], [0,25], [25,0], 
+          [1,2], [2,1], [1,3], [3,1], [1,4], [4,1], [1,25], [25,1], [1,12], [12,1], [1,24], [24,1], [1,17], [17,1], [1,18], [18,1], [1,19], [19,1], [1,20], [20,1], 
+          [2,3], [3,2], [2,4], [4,2], [2,24], [24,2], [2,13], [13,2], [2,25], [25,2],
+          [3,4], [4,3], [3,24], [24,3], [3,25], [25,3], [3,12], [12,3], [3,13], [13,3], [3,14], [14,3], [3,15], [15,3], [3,16], [16,3], 
+          [4,24], [24,4], [4,8], [8,4], [4,9], [9,4], [4,25], [25,4],
+          [5,6], [6,5], [5,7], [7,5], [5,15], [15,5], [5,25], [25,5], 
+          [6,7], [7,6], [6,15], [15,6], [6,16], [16,6], [6,10], [10,6], [6,11], [11,6], [6,25], [25,6], 
+          [7,15], [15,7], [7,25], [25,7], [7,22], [22,7], [7,23], [23,7],
+          [8,9], [9,8], [8,15], [15,8], [8,19], [19,8],      
+          [9,16], [16,9], [9,20], [20,9], [9,27], [27,9], 
+          [10,11], [11,10], [10,16], [16,10], [10,21], [21,10], [10,22], [22,10], [10,25], [25,10], 
+          [11,25], [25,11], [11,16], [16,11], [11,23], [23,11], [11,27], [27,11],   
+          [12,13], [13,12], [12,14], [14,12], [12,15], [15,12], [12,16], [16,12], [12,17], [17,12], [12,18], [18,12], [12,19], [19,12], [12,20], [20,12],          
+          [13,14], [14,13], [13,15], [15,13], [13,16], [16,13], [13,18], [18,13],  
+          [14,15], [15,14], [14,16], [16,14], [14,26], [26,14],  
+          [15,16], [16,15], [15,19], [19,15],   
+          [16,20], [20,16], [16,27], [27,16],    
+          [17,18], [18,17], [17,19], [19,17], [17,20], [20,17], [17,26], [26,17], 
+          [18,19], [19,18], [18,20], [20,18], [18,26], [26,18],  
+          [19,20], [20,19], [19,26], [26,19],          
+          [20,26], [26,20], [20,27], [27,20], 
+          [21,22], [22,21], [21,26], [26,21],          
+          [22,23], [23,22], [22,26], [26,22],          
+          [23,26], [26,23], [23,27], [27,23],       
+          [24,26], [26,24]   
+            ], dtype=torch.long).t().to(self.device)
+        
+        self.edge_type = torch.tensor([
+            0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1,             # M0
+            0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,   # M1
+            0, 0, 0, 0, 1, 1, 0, 0, 1, 1,                   # M2
+            0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, # M3
+            1, 1, 0, 0, 0, 0, 1, 1,                         # M4
+            0, 0, 0, 0, 0, 0, 1, 1,                         # M5
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1,             # M6
+            0, 0, 1, 1, 0, 0, 0, 0,                         # M7
+            0, 0, 0, 0, 0, 0,                               # M8
+            0, 0, 0, 0, 0, 0,                               # M9
+            0, 0, 0, 0, 0, 0, 0, 0, 1, 1,                   # M10
+            1, 1, 0, 0, 0, 0, 0, 0,                         # M11
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, # M12
+            0, 0, 0, 0, 0, 0, 0, 0,                         # M13
+            0, 0, 0, 0, 1, 1,                               # M14
+            0, 0, 0, 0,                                     # M15
+            0, 0, 0, 0,                                     # M16
+            0, 0, 0, 0, 0, 0, 1, 1,                         # M17
+            0, 0, 0, 0, 1, 1,                               # M18
+            0, 0, 1, 1,                                     # M19
+            1, 1, 0, 0,                                     # M20
+            0, 0, 1, 1,                                     # M21
+            0, 0, 1, 1,                                     # M22
+            1, 1, 0, 0,                                     # M23
+            1, 1,                                           # Ib
+            ]).to(self.device)
+        
+        self.num_relations = 2
+        self.num_nodes = 28
+        self.num_node_features = 11
+        self.obs_shape = (self.num_nodes, self.num_node_features)
+
+        """Select an action from the input state."""
+        
+        self.W_C0 = 10
+        self.L_C0 = 10
+        M_C0_low = 1
+        M_C0_high = 40
+        self.C0_low = M_C0_low * (self.L_C0 * self.W_C0 * 2e-15 + (self.L_C0 + self.W_C0) *0.38e-15)  # 0.2076pF
+        self.C0_high = M_C0_high * (self.L_C0 * self.W_C0 * 2e-15 + (self.L_C0 + self.W_C0)*0.38e-15) # 8.304pF
+        
+        self.action_space_low = np.array([ 0.5, 0.5, 1, # M0(W_low,L_low,M_low)
+                                        0.5, 0.5, 1,    # M7
+                                        0.5, 0.5, 1,    # M8
+                                        0.5, 0.5, 1,    # M10
+                                        0.5, 0.5, 100,  # M11
+                                        0.5, 0.5, 1,    # M15
+                                        0.5, 0.5, 1,    # M17
+                                        0.5, 0.5, 1,    # M21
+                                        0.5, 0.5, 1,    # M23
+                                        1e-6,           # Ib
+                                        M_C0_low, ])    # C0 
+        
+        self.action_space_high = np.array([10, 5, 50,  # M0(W_high,L_high,M_high) 
+                                        10, 5, 50,     # M7
+                                        10, 5, 50,     # M8  
+                                        10, 5, 50,     # M10
+                                        10, 5, 500,    # M11
+                                        10, 5, 50,     # M15
+                                        10, 5, 50,     # M17
+                                        10, 5, 50,     # M21
+                                        10, 5, 50,     # M23
+                                        30e-6,         # Ib  
+                                        M_C0_high,])   # C0:30
+        
+        self.action_dim = len(self.action_space_low)
+        self.action_shape = (self.action_dim,)    
+        
+        """Some target specifications for the final design""" 
+        self.phase_margin_target = 60 
+        self.CL = 500  #100pF
+        self.dcgain_target = 130
+        self.PSRP_target = -80
+        self.PSRN_target = -80 
+        self.cmrrdc_target = -80
+        self.vos_target = 0.06e-3   
+        self.TC_target = 10e-6
+        self.settlingTime_target = 1e-6
+        self.FOML_target = 2000
+        self.FOMS_target = 10000
+        self.Active_Area_target = 80
+        self.Power_target = 0.2
+        self.GBW_target = 4e6
+        self.sr_target = 0.8
+
+        """ baseline """
+        self.PSRR_base = -60
+        self.cmrrdc_base = -60
+        self.dcgain_base = 90
+        self.FOML_base = 1000
+        self.FOMS_base = 5000
+        self.settlingTime_base = 5e-6
+        self.Active_Area_base = 100
+        self.TC_base = 50e-6
+        self.vos_base = 0.1e-3    
+        self.Power_base = 0.3
+        self.sr_base = 0.6
+        self.GBW_base = 3e6
+
+        self.GND = 0
+        self.Vdd = 1.8
+        
+class GraphAMPAFFC:
+    """                                                                                                                           
+    node 0 : M0 , node 1 : M1 , node 2 : M2 , node 3 : M3 , node 4 : M4 , node 5 : M5
+    node 6 : M6 , node 7 : M7 , node 8 : M9 , node 9 : M10 , node 10 : M11
+    node 11 : M12 , node 12 : M13 , node 13 : M14 , node 14 : M15 , node 15 : M16 , node16 : M17 ,
+    node 17 : M18 , node 18 : M19 , node 19 : M20 , node 20 : M21 , node 21 : M22 ,   
+    node22 : M23 , node23 : M25 , node24 : M59 , node25 : M60 , node26 : M61 , node27 : M62 , node28 : M63 , 
+    node29 : M64 , node30 : Ib , node31 : VDD , node32 : GND , node33 : C0 , node34 : C1
+    """
+    def __init__(self):        
+        # self.device = torch.device(
+        #     "cuda:0" if torch.cuda.is_available() else "cpu"
+        # )
+        
+        self.device = torch.device(
+           "cpu"
+        )
+        self.ckt_hierarchy = (
+                      ('M0','x1.XM0','pfet_01v8','m'),
+                      ('M1','x1.XM1','pfet_01v8','m'),
+                      ('M2','x1.XM2','pfet_01v8','m'),
+                      ('M3','x1.XM3','pfet_01v8','m'),
+                      ('M4','x1.XM4','pfet_01v8','m'),
+                      ('M5','x1.XM5','pfet_01v8','m'),
+                      ('M6','x1.XM6','pfet_01v8','m'),
+                      ('M7','x1.XM7','pfet_01v8','m'),
+                      ('M9','x1.XM9','pfet_01v8','m'),                     
+                      ('M10','x1.XM10','pfet_01v8','m'),
+                      ('M11','x1.XM11','pfet_01v8','m'),
+                      ('M12','x1.XM12','pfet_01v8','m'),
+                      ('M13','x1.XM13','nfet_01v8','m'),
+                      ('M14','x1.XM14','nfet_01v8','m'),
+                      ('M15','x1.XM15','nfet_01v8','m'),
+                      ('M16','x1.XM16','nfet_01v8','m'),
+                      ('M17','x1.XM17','nfet_01v8','m'),
+                      ('M18','x1.XM18','nfet_01v8','m'),
+                      ('M19','x1.XM19','nfet_01v8','m'),
+                      ('M20','x1.XM20','nfet_01v8','m'),
+                      ('M21','x1.XM21','nfet_01v8','m'),
+                      ('M22','x1.XM22','nfet_01v8','m'),
+                      ('M23','x1.XM23','nfet_01v8','m'),
+                      ('M25','x1.XM25','nfet_01v8','m'),
+                      ('M59','x1.XM59','pfet_01v8','m'),
+                      ('M60','x1.XM60','nfet_01v8','m'),
+                      ('M61','x1.XM61','nfet_01v8','m'),
+                      ('M62','x1.XM62','pfet_01v8','m'),
+                      ('M63','x1.XM63','nfet_01v8','m'),
+                      ('M64','x1.XM64','nfet_01v8','m'),
+
+                      ('Ib','','Ib','i'),
+                      ('C0','x1.XC0','cap_mim_m3_1','c'),
+                      ('C1','x1.XC1','cap_mim_m3_1','c')
+                     )    
+
+        self.op = {'M0':{},'M1':{},'M2':{},'M3':{},'M4':{},'M5':{},'M6':{},'M7':{},'M9':{},'M10':{},'M11':{},'M12':{},
+                   'M13':{},'M14':{},'M15':{},'M16':{},'M17':{},'M18':{},'M19':{},'M20':{},'M21':{},'M22':{},'M23':{},'M25':{},
+                   'M59':{},'M60':{},'M61':{},'M62':{},'M63':{},'M64':{},'Ib':{},'C0':{},'C1':{}}
+
+        self.edge_index = torch.tensor([
+          [0,1], [1,0], [0,2], [2,0], [0,3], [3,0], [0,4], [4,0], [0,7], [7,0], [0,30], [30,0], [0,31], [31,0],
+          [1,2], [2,1], [1,3], [3,1], [1,4], [4,1], [1,7], [7,1], [1,31], [31,1], [1,12], [12,1], [1,30], [30,1], [1,17], [17,1], [1,18], [18,1], [1,19], [19,1], [1,20], [20,1], [1,26], [26,1], [1,29], [29,1],
+          [2,3], [3,2], [2,4], [4,2], [2,7], [7,2], [2,30], [30,2], [2,13], [13,2], [2,31], [31,2],
+          [3,4], [4,3], [3,7], [7,3], [3,30], [30,3], [3,31], [31,3], [3,12], [12,3], [3,13], [13,3], [3,14], [14,3], [3,15], [15,3], [3,16], [16,3], [3,25], [25,3], [3,28], [28,3],
+          [4,7], [7,4], [4,30], [30,4], [4,8], [8,4], [4,9], [9,4], [4,31], [31,4], 
+          [5,6], [6,5], [5,15], [15,5], [5,31], [31,5],
+          [6,15], [15,6], [6,16], [16,6], [6,10], [10,6], [6,11], [11,6], [6,31], [31,6], [6,27], [27,6], [6,28], [28,6],
+          [7,30], [30,7], [7,31], [31,7], [7,22], [22,7], [7,23], [23,7], [7,33], [33,7],
+          [8,15], [15,8], [8,19], [19,8], [8,9], [9,8],
+          [9,16], [16,9], [9,20], [20,9],
+          [10,21], [21,10], [10,22], [22,10], [10,11], [11,10], [10,16], [16,10], [10,27], [27,10], [10,28], [28,10], [10,31], [31,10],
+          [11,23], [23,11], [11,33], [33,11], [11,34], [34,11], [11,16], [16,11], [11,27], [27,11], [11,28], [28,11], [11,31], [31,11],
+          [12,17], [17,12], [12,18], [18,12], [12,19], [19,12], [12,20], [20,12], [12,13], [13,12], [12,14], [14,12], [12,15], [15,12], [12,16], [16,12], [12,25], [25,12], [12,26], [26,12], [12,28], [28,12], [12,29], [29,12],
+          [13,14], [14,13], [13,15], [15,13], [13,16], [16,13], [13,18], [18,13], [13,25], [25,13], [13,28], [28,13],
+          [14,15], [15,14], [14,16], [16,14], [14,32], [32,14], [14,25], [25,14], [14,28], [28,14],
+          [15,16], [16,15], [15,32], [32,15], [15,25], [25,15], [15,28], [28,15],
+          [16,25], [25,16], [16,27], [27,16], [16,28], [28,16], [16,20], [20,16],
+          [17,18], [18,17], [17,19], [19,17], [17,20], [20,17], [17,32], [32,17], [17,26], [26,17], [17,29], [29,17],
+          [18,19], [19,18], [18,20], [20,18], [18,32], [32,18], [18,26], [26,18], [18,29], [29,18],
+          [19,20], [20,19], [19,32], [32,19], [19,26], [26,19], [19,29], [29,19],
+          [20,32], [32,20], [20,26], [26,20], [20,29], [29,20],
+          [21,22], [22,21], [21,32], [32,21], 
+          [22,23], [23,22], [22,33], [33,22], [22,32], [32,22],
+          [23,33], [33,23], [23,34], [34,23], [23,32], [32,23],
+          [24,25], [25,24], [24,27], [27,24], [24,31], [31,24],
+          [25,26], [26,25], [25,27], [27,25], [25,28], [28,25],
+          [26,29], [29,26], [26,32], [32,26], 
+          [27,28], [28,27], [27,31], [31,27],
+          [28,29], [29,28], [28,34], [34,28],
+          [29,34], [34,29], [29,32], [32,29],
+          [30,32], [32,30],
+          [33,34], [34,33]
+            ], dtype=torch.long).t().to(self.device)
+        
+        self.edge_type = torch.tensor([
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1,             # M0
+            0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, # M1
+            0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1,                   # M2
+            0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,             # M3
+            0, 0, 1, 1, 0, 0, 0, 0, 1, 1,                         # M4
+            0, 0, 0, 0, 1, 1,                                     # M5
+            0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0,             # M6
+            1, 1, 1, 1, 0, 0, 0, 0, 0, 0,                         # M7
+            0, 0, 0, 0, 0, 0,                                     # M9
+            0, 0, 0, 0,                                           # M10
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1,             # M11
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1,             # M12
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,       # M13
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,                   # M14
+            0, 0, 0, 0, 1, 1, 0, 0, 0, 0,                         # M15
+            0, 0, 0, 0, 0, 0, 0, 0,                               # M16
+            0, 0, 0, 0, 0, 0, 0, 0,                               # M17
+            0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0,                   # M18
+            0, 0, 0, 0, 1, 1, 0, 0, 0, 0,                         # M19
+            0, 0, 1, 1, 0, 0, 0, 0,                               # M20
+            1, 1, 0, 0, 0, 0,                                     # M21
+            0, 0, 1, 1,                                           # M22 
+            0, 0, 0, 0, 1, 1,                                     # M23
+            0, 0, 0, 0, 1, 1,                                     # M25
+            0, 0, 0, 0, 1, 1,                                     # M59
+            0, 0, 0, 0, 0, 0,                                     # M60
+            0, 0, 1, 1,                                           # M61
+            0, 0, 1, 1,                                           # M62
+            0, 0, 0, 0,                                           # M63
+            0, 0, 1, 1,                                           # M64
+            1, 1,                                                 # Ib
+            0, 0,                                                 # C0
+            ]).to(self.device)
+        
+        self.num_relations = 2
+        self.num_nodes = 35
+        self.num_node_features = 12
+        self.obs_shape = (self.num_nodes, self.num_node_features)
+
+        """Select an action from the input state."""
+
+        self.L_C1 = 20 
+        self.W_C1 = 20
+        M_C1_low = 1
+        M_C1_high = 30 
+        self.C1_low = M_C1_low * (self.L_C1 * self.W_C1 * 2e-15 + (self.L_C1 + self.W_C1)*0.38e-15)   # 0.8152pF
+        self.C1_high = M_C1_high * (self.L_C1 * self.W_C1 * 2e-15 + (self.L_C1 + self.W_C1)*0.38e-15) # 24.456pF
+        
+        self.W_C0 = 30
+        self.L_C0 = 30
+        M_C0_low = 1
+        M_C0_high = 30
+        self.C0_low = M_C0_low * (self.L_C0 * self.W_C0 * 2e-15 + (self.L_C0 + self.W_C0) *0.38e-15)  # 1.823 pF
+        self.C0_high = M_C0_high * (self.L_C0 * self.W_C0 * 2e-15 + (self.L_C0 + self.W_C0)*0.38e-15) # 54.69 pF
+
+        self.action_space_low = np.array([ 0.5, 0.5, 1, # M0(W_low,L_low,M_low)
+                                        0.5, 0.5, 1,    # M9
+                                        0.5, 0.5, 1,    # M11
+                                        0.5, 0.5, 100,  # M12
+                                        0.5, 0.5, 1,    # M17
+                                        0.5, 0.5, 1,    # M18
+                                        0.5, 0.5, 1,    # M22
+                                        0.5, 0.5, 1,    # M25
+                                        0.5, 0.5, 1,    # M59
+                                        0.5, 0.5, 1,    # M60
+                                        1e-6,           # Ib
+                                        M_C0_low,       # C0:1.823pF
+                                        M_C1_low])      # C1
+        
+        self.action_space_high = np.array([10, 5, 50,  # M0(W_high,L_high,M_high) 
+                                        10, 5, 50,     # M9
+                                        10, 5, 50,     # M11
+                                        10, 5, 500,     # M12
+                                        10, 5, 50,     # M17
+                                        10, 5, 50,     # M18
+                                        10, 5, 50,     # M22
+                                        10, 5, 50,     # M25
+                                        10, 5, 50,     # M59
+                                        10, 5, 50,     # M60
+                                        30e-6,          # Ib  
+                                        M_C0_high,      # C0:54.69pF
+                                        M_C1_high])     # C1:30
+
+        self.action_dim = len(self.action_space_low)
+        self.action_shape = (self.action_dim,)    
+        
+        """Some target specifications for the final design"""
+        self.phase_margin_target = 60 
+        self.CL = 120  #100pF
+        self.dcgain_target = 130
+        self.PSRP_target = -80
+        self.PSRN_target = -80 
+        self.cmrrdc_target = -80
+        self.vos_target = 0.06e-3   
+        self.TC_target = 10e-6
+        self.settlingTime_target = 1e-6
+        self.FOML_target = 1320
+        self.FOMS_target = 1200
+        self.Active_Area_target = 80
+        self.Power_target = 0.2
+        self.GBW_target = 2e6
+        self.sr_target = 2.2
+
+        """ baseline """
+        self.PSRR_base = -60
+        self.cmrrdc_base = -60
+        self.dcgain_base = 90
+        self.FOML_base = 800
+        self.FOMS_base = 500
+        self.settlingTime_base = 5e-6
+        self.Active_Area_base = 100
+        self.TC_base = 50e-6
+        self.vos_base = 0.1e-3    
+        self.Power_base = 0.3
+        self.sr_base = 2
+        self.GBW_base = 1.25e6
+
+        self.GND = 0
+        self.Vdd = 1.8
+               
+class GraphAMPIAC:
+    """                                                                                                                           
+    node 0 : M0 , node 1 : M1 , node 2 : M2 , node 3 : M3 , node 4 : M4 , node 5 : M5
+    node 6 : M6 , node 7 : M7 , node 8 : M8 , node 9 : M9 , node 10 : M10 , node 11 : M11
+    node 12 : M12 , node 13 : M13 , node 14 : M14 , node 15 : M15 , node 16 : M16 , node17 : M17 ,
+    node 18 : M18 , node 19 : M19 , node 20 : M20 , node21 : M23 , node22 : M57 , node23 : M58 ,
+    node24 : M61 , node25 : M62 , node26 : M63 , node27 : M64 , node28 : M65 , node29 : M66 ,  
+    node30 : M67 , node31 : M68 , node32 : M69 , node33 : M70 , 
+    node34 : Ib , node35 : VDD , node36 : GND , node37 : C0 , node38 : C1 , node39 : R0
+    """
+    def __init__(self):        
+        # self.device = torch.device(
+        #     "cuda:0" if torch.cuda.is_available() else "cpu"
+        # )
+        
+        self.device = torch.device(
+           "cpu"
+        )
+        # we do not include R here since, it is not straght forward to get the resistance from resistor in SKY130 PDK
+        self.ckt_hierarchy = (
+                      ('M0','x1.XM0','pfet_01v8','m'),
+                      ('M1','x1.XM1','pfet_01v8','m'),
+                      ('M2','x1.XM2','pfet_01v8','m'),
+                      ('M3','x1.XM3','pfet_01v8','m'),
+                      ('M4','x1.XM4','pfet_01v8','m'),
+                      ('M5','x1.XM5','pfet_01v8','m'),
+                      ('M6','x1.XM6','pfet_01v8','m'),
+                      ('M7','x1.XM7','pfet_01v8','m'),
+                      ('M8','x1.XM8','pfet_01v8','m'),
+                      ('M9','x1.XM9','pfet_01v8','m'),
+                      ('M10','x1.XM10','pfet_01v8','m'),
+                      ('M11','x1.XM11','pfet_01v8','m'),
+                      ('M12','x1.XM12','nfet_01v8','m'),
+                      ('M13','x1.XM13','nfet_01v8','m'),
+                      ('M14','x1.XM14','nfet_01v8','m'),
+                      ('M15','x1.XM15','nfet_01v8','m'),
+                      ('M16','x1.XM16','nfet_01v8','m'),
+                      ('M17','x1.XM17','nfet_01v8','m'),
+                      ('M18','x1.XM18','nfet_01v8','m'),
+                      ('M19','x1.XM19','nfet_01v8','m'),
+                      ('M20','x1.XM20','nfet_01v8','m'),
+                      ('M23','x1.XM23','nfet_01v8','m'),
+                      ('M57','x1.XM57','pfet_01v8','m'),
+                      ('M58','x1.XM58','pfet_01v8','m'),
+                      ('M61','x1.XM61','pfet_01v8','m'),
+                      ('M62','x1.XM62','pfet_01v8','m'),
+                      ('M65','x1.XM65','pfet_01v8','m'),
+                      ('M66','x1.XM66','pfet_01v8','m'),
+                      ('M63','x1.XM63','nfet_01v8','m'),
+                      ('M64','x1.XM64','nfet_01v8','m'),
+                      ('M67','x1.XM67','nfet_01v8','m'),
+                      ('M68','x1.XM68','nfet_01v8','m'),
+                      ('M69','x1.XM69','nfet_01v8','m'),
+                      ('M70','x1.XM70','nfet_01v8','m'),
+
+                      ('Ib','','Ib','i'),
+                      ('C0','x1.XC0','cap_mim_m3_1','c'),
+                      ('C1','x1.XC1','cap_mim_m3_1','c')
+                     )    
+
+        self.op = {'M0':{},'M1':{},'M2':{},'M3':{},'M4':{},'M5':{},'M6':{},'M7':{},'M8':{}, 'M9':{},'M10':{},'M11':{},
+                'M12':{},'M13':{},'M14':{},'M15':{},'M16':{},'M17':{},'M18':{},'M19':{},'M20':{},'M23':{},
+                'M57':{},'M58':{},'M61':{},'M62':{},'M65':{},'M66':{},'M63':{},'M64':{},'M67':{},'M68':{},'M69':{},'M70':{},
+                'Ib':{},'C0':{},'C1':{}}
+
+        self.edge_index = torch.tensor([
+          [0,1], [1,0], [0,2], [2,0], [0,3], [3,0], [0,4], [4,0], [0,7], [7,0], [0,22], [22,0], [0,34], [34,0], [0,35], [35,0], 
+          [1,2], [2,1], [1,3], [3,1], [1,4], [4,1], [1,7], [7,1], [1,22], [22,1], [1,34], [34,1], [1,35], [35,1], [1,23], [23,1],
+          [2,3], [3,2], [2,4], [4,2], [2,7], [7,2], [2,22], [22,2], [2,34], [34,2], [2,35], [35,2], [2,24], [24,2], 
+          [3,4], [4,3], [3,7], [7,3], [3,22], [22,3], [3,34], [34,3], [3,35], [35,3], [3,25], [25,3], 
+          [4,7], [7,4], [4,22], [22,4], [4,34], [34,4], [4,8], [8,4], [4,9], [9,4], [4,35], [35,4],
+          [5,6], [6,5], [5,15], [15,5], [5,35], [35,5], 
+          [6,15], [15,6], [6,16], [16,6], [6,10], [10,6], [6,11], [11,6], [6,35], [35,6], [6,37], [37,6],
+          [7,22], [22,7], [7,34], [34,7], [7,35], [35,7], [7,29], [29,7], 
+          [8,9], [9,8], [8,15], [15,8], [8,19], [19,8], 
+          [9,16], [16,9], [9,20], [20,9],       
+          [10,16], [16,10], [10,11], [11,10], [10,35], [35,10], [10,37], [37,10], [10,30], [30,10], [10,32], [32,10], [10,33], [33,10],
+          [11,23], [23,11], [11,37], [37,11], [11,35], [35,11], [11,16], [16,11],
+          [12,13], [13,12], [12,14], [14,12], [12,15], [15,12], [12,16], [16,12], [12,17], [17,12], [12,18], [18,12], [12,19], [19,12], [12,20], [20,12], 
+          [12,25], [25,12], [12,26], [26,12], [12,23], [23,12], [12,27], [27,12], [12,31], [31,12], 
+          [13,14], [14,13], [13,15], [15,13], [13,16], [16,13], [13,18], [18,13], [13,24], [24,13], [13,25], [25,13], [13,26], [26,13], [13,30], [30,13],    
+          [14,15], [15,14], [14,16], [16,14], [14,36], [36,14], [14,25], [25,14], [14,26], [26,14], [14,30], [30,14],  
+          [15,16], [16,15], [15,19], [19,15], [15,25], [25,15], [15,26], [26,15], [15,30], [30,15],  
+          [16,20], [20,16], [16,37], [37,16], [16,25], [25,16], [16,26], [26,16], [16,30], [30,16], 
+          [17,18], [18,17], [17,19], [19,17], [17,20], [20,17], [17,36], [36,17], [17,23], [23,17], [17,27], [27,17], [17,31], [31,17], 
+          [18,19], [19,18], [18,20], [20,18], [18,36], [36,18], [18,23], [23,18], [18,27], [27,18], [18,31], [31,18],         
+          [19,20], [20,19], [19,36], [36,19], [19,23], [23,19], [19,27], [27,19], [19,31], [31,19],                  
+          [20,36], [36,20], [20,23], [23,20], [20,27], [27,20], [20,31], [31,20],              
+          [21,36], [36,21], [21,37], [37,21], [21,38], [38,21], [21,29], [29,21], [21,32], [32,21], 
+          [22,34], [34,22], [22,23], [23,22], [22,24], [24,22], [22,25], [25,22], [22,28], [28,22], [22,29], [29,22],
+          [23,27], [27,23], [23,31], [31,23], [23,24], [24,23], [23,25], [25,23], [23,26], [26,23], [23,28], [28,23], [23,29], [29,23], 
+          [24,25], [25,24], [24,26], [26,24], [24,28], [28,24], [24,29], [29,24], 
+          [25,26], [26,25], [25,30], [30,25], [25,28], [28,25], [25,29], [29,25],
+          [26,27], [27,26], [26,28], [28,26], [26,29], [29,26], [26,30], [30,26], 
+          [27,31], [31,27], [27,36], [36,27], 
+          [28,29], [29,28], [28,35], [35,28], 
+          [29,32], [32,29], [29,38], [38,29], 
+          [30,31], [31,30], [30,32], [32,30], [30,33], [33,30],
+          [31,33], [33,31], [31,36], [36,31],
+          [32,38], [38,32], [32,33], [33,32], [32,36], [36,32], 
+          [33,36], [36,33],
+          [34,36], [36,34],
+          [36,39], [39,36],
+          [38,39], [39,38]], dtype=torch.long).t().to(self.device)
+
+        self.edge_type = torch.tensor([
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1,             # M0
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0,             # M1
+            0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0,                   # M2
+            0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0,                         # M3
+            0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1,                         # M4
+            0, 0, 0, 0, 1, 1,                                           # M5
+            0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0,                         # M6
+            0, 0, 1, 1, 1, 1, 0, 0,                                     # M7
+            0, 0, 0, 0, 0, 0,                                           # M8
+            0, 0, 0, 0,                                                 # M9
+            0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,                   # M10
+            0, 0, 0, 0, 1, 1, 0, 0,                                     # M11
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0,                               # M12
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,             # M13
+            0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0,                         # M14
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0,                               # M15
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0,                               # M16
+            0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0,                   # M17
+            0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0,                         # M18
+            0, 0, 1, 1, 0, 0, 0, 0, 0, 0,                               # M19
+            1, 1, 0, 0, 0, 0, 0, 0,                                     # M20
+            1, 1, 0, 0, 0, 0, 0, 0, 0, 0,                               # M23
+            1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,                         # M57
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,                   # M58
+            0, 0, 0, 0, 0, 0, 0, 0,                                     # M61
+            0, 0, 0, 0, 0, 0, 0, 0,                                     # M62
+            0, 0, 0, 0, 0, 0, 0, 0,                                     # M63
+            0, 0, 1, 1,                                                 # M64
+            0, 0, 1, 1,                                                 # M65
+            0, 0, 0, 0,                                                 # M66
+            0, 0, 0, 0, 0, 0,                                           # M67
+            0, 0, 1, 1,                                                 # M68
+            0, 0, 0, 0, 1, 1,                                           # M69
+            1, 1,                                                       # M70
+            1, 1,                                                       # Ib
+            1, 1,                                                       # R0
+            0, 0                                                        # C1
+            ]).to(self.device)
+        
+        self.num_relations = 2
+        self.num_nodes = 40
+        self.num_node_features = 13
+        self.obs_shape = (self.num_nodes, self.num_node_features)
+
+        """Select an action from the input state."""
+
+        self.L_C1 = 10 
+        self.W_C1 = 10
+        M_C1_low = 1
+        M_C1_high = 50 
+        self.C1_low = M_C1_low * (self.L_C1 * self.W_C1 * 2e-15 + (self.L_C1 + self.W_C1)*0.38e-15)   # 0.2076 pF
+        self.C1_high = M_C1_high * (self.L_C1 * self.W_C1 * 2e-15 + (self.L_C1 + self.W_C1)*0.38e-15) # 10.38 pF
+        
+        self.W_C0 = 10
+        self.L_C0 = 10
+        M_C0_low = 1
+        M_C0_high = 50
+        self.C0_low = M_C0_low * (self.L_C0 * self.W_C0 * 2e-15 + (self.L_C0 + self.W_C0) *0.38e-15)  # 0.2076 pF
+        self.C0_high = M_C0_high * (self.L_C0 * self.W_C0 * 2e-15 + (self.L_C0 + self.W_C0)*0.38e-15) # 10.38 pF
+        
+        self.W_R0 = 0.35 # W: 0.35um
+        self.L_R0 = 120 # L: 120um
+        M_R0_low = 1
+        M_R0_high = 20
+        self.Rsheet = 1112.4
+        self.R0_low =  self.Rsheet * self.L_R0 / self.W_R0 / M_R0_high  # 19.068kΩ
+        self.R0_high = self.Rsheet * self.L_R0 / self.W_R0 / M_R0_low   # 381.36kΩ
+
+        self.action_space_low = np.array([ 0.5, 0.5, 1, # M0(W_low,L_low,M_low)
+                                        0.5, 0.5, 1,    # M8
+                                        0.5, 0.5, 1,    # M10
+                                        0.5, 0.5, 100,  # M11
+                                        0.5, 0.5, 1,    # M17
+                                        0.5, 0.5, 1,    # M23
+                                        0.5, 0.5, 1,    # M66
+                                        0.5, 0.5, 1,    # M68
+                                        0.5, 0.5, 1,    # M70
+                                        1e-6,         # Ib
+                                        M_C0_low,     # C0
+                                        M_C1_low,     # C1  
+                                        M_R0_low ])   # R0
+        
+        self.action_space_high = np.array([10, 5, 50,  # M0(W_high,L_high,M_high) 
+                                        10, 5, 50,     # M8  
+                                        10, 5, 50,     # M10
+                                        10, 5, 500,     # M11
+                                        10, 5, 50,     # M17
+                                        10, 5, 50,     # M23
+                                        10, 5, 50,     # M66
+                                        10, 5, 50,     # M68
+                                        10, 5, 50,     # M70
+                                        30e-6,        # Ib  
+                                        M_C0_high,    # C0:30
+                                        M_C1_high,    # C1:30
+                                        M_R0_high, ]) # R0:20
+        
+        self.action_dim = len(self.action_space_low)
+        self.action_shape = (self.action_dim,)    
+        
+        """Some target specifications for the final design"""
+        self.phase_margin_target = 60 
+        self.CL = 150  #100pF
+        self.dcgain_target = 130
+        self.PSRP_target = -80
+        self.PSRN_target = -80 
+        self.cmrrdc_target = -80
+        self.vos_target = 0.06e-3   
+        self.TC_target = 10e-6
+        self.settlingTime_target = 1e-6
+        self.FOML_target = 720
+        self.FOMS_target = 2100
+        self.Active_Area_target = 80
+        self.Power_target = 0.25
+        self.GBW_target = 3.5e6
+        self.sr_target = 1.2
+
+        """ baseline """
+        self.PSRR_base = -60
+        self.cmrrdc_base = -60
+        self.dcgain_base = 90
+        self.FOML_base = 500
+        self.FOMS_base = 1500
+        self.settlingTime_base = 5e-6
+        self.Active_Area_base = 100
+        self.TC_base = 50e-6
+        self.vos_base = 0.1e-3    
+        self.Power_base = 0.3
+        self.sr_base = 1
+        self.GBW_base = 3e6
+
+        self.GND = 0
+        self.Vdd = 1.8
+       
+
+class GraphAMPTCFC:
+    """                                                                                                                           
+    node 0 : M0 , node 1 : M1 , node 2 : M2 , node 3 : M3 , node 4 : M4 , node 5 : M5
+    node 6 : M6 , node 7 : M7 , node 8 : M8 , node 9 : M9 , node 10 : M10 , node 11 : M11
+    node 12 : M12 , node 13 : M13 , node 14 : M14 , node 15 : M15 , node 16 : M16 , node17 : M17 ,
+    node 18 : M18 , node 19 : M19 , node 20 : M20 , node21 : M23 , node22 : M57 , node23 : M58 ,
+    node24 : M61 , node25 : M62 , node26 : M63 , node27 : M64 , node28 : M65 , node29 : M66 ,  
+    node30 : M69 , node31 : M70 , 
+    node32 : Ib , node33 : VDD , node34 : GND , node35 : C0 , node36 : C1 
+    """
+    def __init__(self):        
+        # self.device = torch.device(
+        #     "cuda:0" if torch.cuda.is_available() else "cpu"
+        # )
+        
+        self.device = torch.device(
+           "cpu"
+        )
+        # we do not include R here since, it is not straght forward to get the resistance from resistor in SKY130 PDK
+        self.ckt_hierarchy = (
+                      ('M0','x1.XM0','pfet_01v8','m'),
+                      ('M1','x1.XM1','pfet_01v8','m'),
+                      ('M2','x1.XM2','pfet_01v8','m'),
+                      ('M3','x1.XM3','pfet_01v8','m'),
+                      ('M4','x1.XM4','pfet_01v8','m'),
+                      ('M5','x1.XM5','pfet_01v8','m'),
+                      ('M6','x1.XM6','pfet_01v8','m'),
+                      ('M7','x1.XM7','pfet_01v8','m'),
+                      ('M8','x1.XM8','pfet_01v8','m'),
+                      ('M9','x1.XM9','pfet_01v8','m'),
+                      ('M10','x1.XM10','pfet_01v8','m'),
+                      ('M11','x1.XM11','pfet_01v8','m'),
+                      ('M12','x1.XM12','nfet_01v8','m'),
+                      ('M13','x1.XM13','nfet_01v8','m'),
+                      ('M14','x1.XM14','nfet_01v8','m'),
+                      ('M15','x1.XM15','nfet_01v8','m'),
+                      ('M16','x1.XM16','nfet_01v8','m'),
+                      ('M17','x1.XM17','nfet_01v8','m'),
+                      ('M18','x1.XM18','nfet_01v8','m'),
+                      ('M19','x1.XM19','nfet_01v8','m'),
+                      ('M20','x1.XM20','nfet_01v8','m'),
+                      ('M23','x1.XM23','nfet_01v8','m'),
+                      ('M57','x1.XM57','pfet_01v8','m'),
+                      ('M58','x1.XM58','pfet_01v8','m'),
+                      ('M61','x1.XM61','pfet_01v8','m'),
+                      ('M62','x1.XM62','pfet_01v8','m'),
+                      ('M65','x1.XM65','pfet_01v8','m'),
+                      ('M66','x1.XM66','pfet_01v8','m'),
+                      ('M63','x1.XM63','nfet_01v8','m'),
+                      ('M64','x1.XM64','nfet_01v8','m'),
+                      ('M69','x1.XM69','nfet_01v8','m'),
+                      ('M70','x1.XM70','nfet_01v8','m'),
+
+                      ('Ib','','Ib','i'),
+                      ('C0','x1.XC0','cap_mim_m3_1','c'),
+                      ('C1','x1.XC1','cap_mim_m3_1','c')
+                     )    
+
+        self.op = {'M0':{},'M1':{},'M2':{},'M3':{},'M4':{},'M5':{},'M6':{},'M7':{},'M8':{}, 'M9':{},'M10':{},'M11':{},
+                'M12':{},'M13':{},'M14':{},'M15':{},'M16':{},'M17':{},'M18':{},'M19':{},'M20':{},'M23':{},
+                'M57':{},'M58':{},'M61':{},'M62':{},'M65':{},'M66':{},'M63':{},'M64':{},'M69':{},'M70':{},
+                'Ib':{},'C0':{},'C1':{}}
+
+        self.edge_index = torch.tensor([
+          [0,1], [1,0], [0,2], [2,0], [0,3], [3,0], [0,4], [4,0], [0,7], [7,0], [0,22], [22,0], [0,32], [32,0], [0,33], [33,0], 
+          [1,2], [2,1], [1,3], [3,1], [1,4], [4,1], [1,7], [7,1], [1,22], [22,1], [1,32], [32,1], [1,33], [33,1], [1,23], [23,1],
+          [2,3], [3,2], [2,4], [4,2], [2,7], [7,2], [2,22], [22,2], [2,32], [32,2], [2,33], [33,2], [2,24], [24,2], 
+          [3,4], [4,3], [3,7], [7,3], [3,22], [22,3], [3,32], [32,3], [3,33], [33,3], [3,25], [25,3], 
+          [4,7], [7,4], [4,22], [22,4], [4,32], [32,4], [4,8], [8,4], [4,9], [9,4], [4,33], [33,4],
+          [5,6], [6,5], [5,15], [15,5], [5,33], [33,5], 
+          [6,15], [15,6], [6,16], [16,6], [6,10], [10,6], [6,11], [11,6], [6,33], [33,6], [6,35], [35,6],
+          [7,22], [22,7], [7,32], [32,7], [7,33], [33,7], [7,29], [29,7], 
+          [8,9], [9,8], [8,15], [15,8], [8,19], [19,8], 
+          [9,16], [16,9], [9,20], [20,9],       
+          [10,16], [16,10], [10,11], [11,10], [10,33], [33,10], [10,35], [35,10], [10,30], [30,10], [10,31], [31,10],
+          [11,23], [23,11], [11,33], [33,11], [11,35], [35,11], [11,36], [36,11], [11,16], [16,11],
+          [12,13], [13,12], [12,14], [14,12], [12,15], [15,12], [12,16], [16,12], [12,17], [17,12], [12,18], [18,12], [12,19], [19,12], [12,20], [20,12], 
+          [12,25], [25,12], [12,26], [26,12], [12,23], [23,12], [12,27], [27,12], 
+          [13,14], [14,13], [13,15], [15,13], [13,16], [16,13], [13,18], [18,13], [13,24], [24,13], [13,25], [25,13], [13,26], [26,13], 
+          [14,15], [15,14], [14,16], [16,14], [14,34], [34,14], [14,25], [25,14], [14,26], [26,14],  
+          [15,16], [16,15], [15,19], [19,15], [15,25], [25,15], [15,26], [26,15],   
+          [16,20], [20,16], [16,35], [35,16], [16,25], [25,16], [16,26], [26,16], 
+          [17,18], [18,17], [17,19], [19,17], [17,20], [20,17], [17,34], [34,17], [17,23], [23,17], [17,27], [27,17], 
+          [18,19], [19,18], [18,20], [20,18], [18,34], [34,18], [18,23], [23,18], [18,27], [27,18],
+          [19,20], [20,19], [19,34], [34,19], [19,23], [23,19], [19,27], [27,19], 
+          [20,34], [34,20], [20,23], [23,20], [20,27], [27,20],    
+          [21,34], [34,21], [21,35], [35,21], [21,36], [36,21], [21,29], [29,21], [21,30], [30,21],
+          [22,32], [32,22], [22,23], [23,22], [22,24], [24,22], [22,25], [25,22], [22,26], [26,22], [22,28], [28,22], [22,29], [29,22],
+          [23,27], [27,23], [23,24], [24,23], [23,25], [25,23], [23,26], [26,23], [23,28], [28,23], [23,29], [29,23],
+          [24,25], [25,24], [24,26], [26,24], [24,28], [28,24], [24,29], [29,24], 
+          [25,26], [26,25], [25,28], [28,25], [25,29], [29,25],
+          [26,27], [27,26], [26,28], [28,26], [26,29], [29,26], 
+          [27,34], [34,27], 
+          [28,29], [29,28], [28,33], [33,28], 
+          [29,30], [30,29], [29,36], [36,29], 
+          [30,31], [31,30], [30,34], [34,30], 
+          [31,34], [34,31],
+          [32,34], [34,32],
+          [35,36], [36,35]], dtype=torch.long).t().to(self.device)
+
+        self.edge_type = torch.tensor([
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1,             # M0
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0,    # M1
+            0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0,                   # M2
+            0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0,  # M3
+            0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1,                         # M4
+            0, 0, 0, 0, 1, 1,                                           # M5
+            0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0,                         # M6
+            0, 0, 1, 1, 1, 1, 0, 0,                         # M7
+            0, 0, 0, 0, 0, 0,                                           # M8
+            0, 0, 0, 0,                                                 # M9
+            0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0,                              # M10
+            0, 0, 1, 1, 0, 0, 0, 0, 0, 0,                                      # M11
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+            0, 0, 0, 0, 0, 0, 0, 0,                               # M12
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,              # M13
+            0, 0, 0, 0, 1, 1, 0, 0, 0, 0,                         # M14
+            0, 0, 0, 0, 0, 0, 0, 0,                               # M15
+            0, 0, 0, 0, 0, 0, 0, 0,                               # M16
+            0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0,                   # M17
+            0, 0, 0, 0, 1, 1, 0, 0, 0, 0,                          # M18
+            0, 0, 1, 1, 0, 0, 0, 0,                                # M19
+            1, 1, 0, 0, 0, 0,                                      # M20
+            1, 1, 0, 0, 0, 0, 0, 0, 0, 0,                               # M23
+            1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,                        # M57
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,                    # M58
+            0, 0, 0, 0, 0, 0, 0, 0,                                     # M61
+            0, 0, 0, 0, 0, 0,                                     # M62
+            0, 0, 0, 0, 0, 0,                                     # M63
+            1, 1,                                                 # M64
+            0, 0, 1, 1,                                                 # M65
+            0, 0, 0, 0,                                                 # M66
+            0, 0, 1, 1,                                           # M69
+            1, 1,                                                       # M70
+            1, 1,                                                       # Ib
+            0, 0                                                        # C0
+            ]).to(self.device)
+        
+        self.num_relations = 2
+        self.num_nodes = 37
+        self.num_node_features = 12
+        self.obs_shape = (self.num_nodes, self.num_node_features)
+
+        """Select an action from the input state."""
+
+        self.L_C1 = 30 
+        self.W_C1 = 30
+        M_C1_low = 1
+        M_C1_high = 50 
+        self.C1_low = M_C1_low * (self.L_C1 * self.W_C1 * 2e-15 + (self.L_C1 + self.W_C1)*0.38e-15)   # 1.823 pF
+        self.C1_high = M_C1_high * (self.L_C1 * self.W_C1 * 2e-15 + (self.L_C1 + self.W_C1)*0.38e-15) # 91.14 pF
+        
+        self.W_C0 = 30
+        self.L_C0 = 30
+        M_C0_low = 1
+        M_C0_high = 50
+        self.C0_low = M_C0_low * (self.L_C0 * self.W_C0 * 2e-15 + (self.L_C0 + self.W_C0) *0.38e-15)
+        self.C0_high = M_C0_high * (self.L_C0 * self.W_C0 * 2e-15 + (self.L_C0 + self.W_C0)*0.38e-15)
+
+        self.action_space_low = np.array([ 0.5, 0.5, 1, # M0(W_low,L_low,M_low)
+                                        0.5, 0.5, 1,    # M8
+                                        0.5, 0.5, 1,    # M10
+                                        0.5, 0.5, 1,    # M11
+                                        0.5, 0.5, 1,    # M17
+                                        0.5, 0.5, 1,    # M23
+                                        0.5, 0.5, 1,    # M70
+                                        1e-6,           # Ib
+                                        M_C0_low,       # C0
+                                        M_C1_low,])     # C1    
+        
+        self.action_space_high = np.array([10, 5, 100,  # M0(W_high,L_high,M_high) 
+                                        10, 5, 100,     # M8  
+                                        10, 5, 100,     # M10
+                                        10, 5, 500,     # M11
+                                        10, 5, 100,     # M17
+                                        10, 5, 100,     # M23
+                                        10, 5, 100,     # M70
+                                        50e-6,          # Ib  
+                                        M_C0_high,      # C0:50
+                                        M_C1_high,])    # C1:50
+                                        
+        
+        self.action_dim = len(self.action_space_low)
+        self.action_shape = (self.action_dim,)    
+        
+        """Some target specifications for the final design"""
+        self.PSRP_target = -90
+        self.PSRN_target = -90 
+        
+        self.TC_target = 1e-6
+        self.Power_target = 2e2
+        self.vos_target = 4e-5
+        
+        self.cmrrdc_target = -80 
+        self.dcgain_target = 130
+        self.GBW_target = 1e6
+        self.phase_margin_target = 60 
+
+        self.sr_target = 4e5
+        self.settlingTime_target = 5e-6
+        self.GND = 0
+        self.Vdd = 1.8
+
+        self.rew_eng = True 
+
+class GraphAMPASMIHF:
+    """                                                                                                                           
+    node 0 : M0 , node 1 : M1 , node 2 : M2 , node 3 : M3 , node 4 : M4 , node 5 : M5
+    node 6 : M6 , node 7 : M71 , node 8 : M8 , node 9 : M9 , node 10 : M10 , node 11 : M11
+    node 12 : M12 , node 13 : M13 , node 14 : M14 , node 15 : M15 , node 16 : M16 , node17 : M17 ,
+    node 18 : M18 , node 19 : M19 , node 20 : M20 , node 21 : M23 , 
+    node 22 : M72 , node23 : M73 , node24 : M74 , node25 : M75 , node26 : M76
+    node27 : M70 , node28 : M60 , node29 : M61 , 
+    node30 : Ib , node31 : VDD , node32 : GND , node33 : C0 
+    """
+    def __init__(self):        
+        # self.device = torch.device(
+        #     "cuda:0" if torch.cuda.is_available() else "cpu"
+        # )
+        
+        self.device = torch.device(
+           "cpu"
+        )
+        self.ckt_hierarchy = (
+                      ('M0','x1.XM0','pfet_01v8','m'),
+                      ('M1','x1.XM1','pfet_01v8','m'),
+                      ('M2','x1.XM2','pfet_01v8','m'),
+                      ('M3','x1.XM3','pfet_01v8','m'),
+                      ('M4','x1.XM4','pfet_01v8','m'),
+                      ('M5','x1.XM5','pfet_01v8','m'),
+                      ('M6','x1.XM6','pfet_01v8','m'),
+                      ('M71','x1.XM71','pfet_01v8','m'),
+                      ('M8','x1.XM8','pfet_01v8','m'),
+                      ('M9','x1.XM9','pfet_01v8','m'),
+                      ('M10','x1.XM10','pfet_01v8','m'),
+                      ('M11','x1.XM11','pfet_01v8','m'),
+                      ('M12','x1.XM12','nfet_01v8','m'),
+                      ('M13','x1.XM13','nfet_01v8','m'),
+                      ('M14','x1.XM14','nfet_01v8','m'),
+                      ('M15','x1.XM15','nfet_01v8','m'),
+                      ('M16','x1.XM16','nfet_01v8','m'),
+                      ('M17','x1.XM17','nfet_01v8','m'),
+                      ('M18','x1.XM18','nfet_01v8','m'),
+                      ('M19','x1.XM19','nfet_01v8','m'),
+                      ('M20','x1.XM20','nfet_01v8','m'),
+                      ('M23','x1.XM23','nfet_01v8','m'),
+                      ('M60','x1.XM60','pfet_01v8','m'),
+                      ('M61','x1.XM61','pfet_01v8','m'),
+                      ('M70','x1.XM70','pfet_01v8','m'),
+                      ('M72','x1.XM72','nfet_01v8','m'),
+                      ('M73','x1.XM73','pfet_01v8','m'),
+                      ('M74','x1.XM74','nfet_01v8','m'),
+                      ('M75','x1.XM75','pfet_01v8','m'),
+                      ('M76','x1.XM76','nfet_01v8','m'),
+
+                      ('Ib','','Ib','i'),
+                      ('C0','x1.XC0','cap_mim_m3_1','c'),
+                     )    
+
+        self.op = {'M0':{},'M1':{},'M2':{},'M3':{},'M4':{},'M5':{},'M6':{},'M71':{},'M8':{}, 'M9':{},'M10':{},'M11':{},
+                'M12':{},'M13':{},'M14':{},'M15':{},'M16':{},'M17':{},'M18':{},'M19':{},'M20':{},'M23':{},'M60':{},'M61':{},
+                'M70':{},'M72':{},'M73':{},'M74':{},'M75':{},'M76':{},
+                'Ib':{},'C0':{}}
+
+        self.edge_index = torch.tensor([
+          [0,1], [1,0], [0,3], [3,0], [0,4], [4,0], [0,7], [7,0], [0,30], [30,0], [0,31], [31,0], 
+          [1,7], [7,1], [1,3], [3,1], [1,4], [4,1], [1,31], [31,1], [1,12], [12,1], [1,30], [30,1], [1,17], [17,1], [1,18], [18,1], [1,19], [19,1], [1,20], [20,1], [1,22], [22,1], [1,26], [26,1], 
+          [2,28], [28,2], [2,29], [29,2], [2,31], [31,2], [2,13], [13,2], 
+          [3,4], [4,3], [3,7], [7,3], [3,30], [30,3], [3,31], [31,3], [3,12], [12,3], [3,13], [13,3], [3,14], [14,3], [3,15], [15,3], [3,16], [16,3],
+          [4,7], [7,4], [4,30], [30,4], [4,8], [8,4], [4,9], [9,4], [4,31], [31,4],
+          [5,6], [6,5], [5,15], [15,5], [5,31], [31,5], [5,11], [11,5], [5,28], [28,5], 
+          [6,29], [29,6], [6,27], [27,6], [6,28], [28,6], [6,15], [15,6], [6,11], [11,6], [6,31], [31,6], 
+          [7,23], [23,7], [7,24], [24,7], [7,31], [31,7], [7,30], [30,7], 
+          [8,9], [9,8], [8,15], [15,8], [8,19], [19,8],      
+          [9,16], [16,9], [9,20], [20,9], 
+          [10,32], [32,10], [10,16], [16,10], [10,29], [29,10], [10,24], [24,10], [10,25], [25,10], [10,23], [23,10], [10,27], [27,10],  
+          [11,31], [31,11], [11,15], [15,11], [11,23], [23,11], [11,21], [21,11], [11,26], [26,11], [11,33], [33,11], [11,28], [28,11],    
+          [12,13], [13,12], [12,14], [14,12], [12,15], [15,12], [12,16], [16,12], [12,17], [17,12], [12,18], [18,12], [12,19], [19,12], [12,20], [20,12], [12,22], [22,12], [12,26], [26,12],    
+          [13,14], [14,13], [13,15], [15,13], [13,16], [16,13], [13,18], [18,13], [13,28], [28,13], [13,29], [29,13],   
+          [14,15], [15,14], [14,16], [16,14], [14,32], [32,14],  
+          [15,16], [16,15], [15,19], [19,15], [15,33], [33,15], [15,28], [28,15],    
+          [16,20], [20,16], [16,25], [25,16], [16,29], [29,16], [16,24], [24,16],       
+          [17,18], [18,17], [17,19], [19,17], [17,20], [20,17], [17,32], [32,17], [17,22], [22,17], [17,26], [26,17], 
+          [18,19], [19,18], [18,20], [20,18], [18,32], [32,18], [18,22], [22,18], [18,26], [26,18],  
+          [19,20], [20,19], [19,32], [32,19], [19,33], [33,19], [19,22], [22,19], [19,26], [26,19],  
+          [20,32], [32,20], [20,22], [22,20], [20,26], [26,20],         
+          [21,32], [32,21], [21,33], [33,21], [21,23], [23,21], [21,26], [26,21], [21,27], [27,21],  
+          [22,25], [25,22], [22,26], [26,22], [22,32], [32,22], 
+          [23,26], [26,23], [23,33], [33,23], [23,24], [24,23], [23,31], [31,23], 
+          [24,25], [25,24], [24,29], [29,24], [24,32], [32,24], 
+          [25,26], [26,25], [25,29], [29,25], [25,31], [31,25], 
+          [26,33], [33,26], 
+          [27,29], [29,27], [27,31], [31,27],
+          [28,29], [29,28], 
+          [30,32], [32,30]   
+            ], dtype=torch.long).t().to(self.device)
+        
+        self.edge_type = torch.tensor([
+            0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1,                   # M0
+            0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   # M1
+            0, 0, 0, 0, 1, 1, 0, 0,                               # M2
+            0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, # M3
+            0, 0, 1, 1, 0, 0, 0, 0, 1, 1,                         # M4
+            0, 0, 0, 0, 1, 1, 0, 0, 0, 0,                         # M5
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1,                   # M6
+            0, 0, 0, 0, 1, 1, 1, 1,                               # M7
+            0, 0, 0, 0, 0, 0,                                     # M8
+            0, 0, 0, 0,                                           # M9
+            1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,             # M10
+            1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,             # M11
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, # M12
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,                   # M13
+            0, 0, 0, 0, 1, 1,                                     # M14
+            0, 0, 0, 0, 0, 0, 0, 0,                               # M15
+            0, 0, 0, 0, 0, 0, 0, 0,                               # M16
+            0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0,                   # M17
+            0, 0, 0, 0, 1, 1, 0, 0, 0, 0,                         # M18
+            0, 0, 1, 1, 0, 0, 0, 0, 0, 0,                         # M19
+            1, 1, 0, 0, 0, 0,                                     # M20
+            1, 1, 0, 0, 0, 0, 0, 0, 0, 0,                         # M23
+            0, 0, 0, 0, 1, 1,                                     # M72
+            0, 0, 0, 0, 0, 0, 1, 1,                               # M73
+            0, 0, 0, 0, 1, 1,                                     # M74
+            0, 0, 0, 0, 1, 1,                                     # M75
+            0, 0,                                                 # M76
+            0, 0, 1, 1,                                           # M70
+            0, 0,                                                 # M60
+            1, 1,                                                 # Ib
+            ]).to(self.device)
+        
+        self.num_relations = 2
+        self.num_nodes = 34
+        self.num_node_features = 11
+        self.obs_shape = (self.num_nodes, self.num_node_features)
+
+        """Select an action from the input state."""
+        
+        self.W_C0 = 30
+        self.L_C0 = 30
+        M_C0_low = 1
+        M_C0_high = 50
+        self.C0_low = M_C0_low * (self.L_C0 * self.W_C0 * 2e-15 + (self.L_C0 + self.W_C0) *0.38e-15)  # 1.823 pF
+        self.C0_high = M_C0_high * (self.L_C0 * self.W_C0 * 2e-15 + (self.L_C0 + self.W_C0)*0.38e-15) # 91.14 pF
+        
+        self.action_space_low = np.array([ 0.5, 0.5, 1, # M0(W_low,L_low,M_low)
+                                        0.5, 0.5, 1,    # M5
+                                        0.5, 0.5, 1,    # M8
+                                        0.5, 0.5, 1,    # M10
+                                        0.5, 0.5, 1,    # M11
+                                        0.5, 0.5, 1,    # M15
+                                        0.5, 0.5, 1,    # M17
+                                        0.5, 0.5, 1,    # M23
+                                        0.5, 0.5, 1,    # M60
+                                        0.5, 0.5, 1,    # M70
+                                        0.5, 0.5, 1,    # M73
+                                        0.5, 0.5, 1,    # M74
+                                        0.5, 0.5, 1,    # M75
+                                        0.5, 0.5, 1,    # M76
+                                        1e-6,           # Ib
+                                        M_C0_low, ])    # C0 
+        
+        self.action_space_high = np.array([10, 5, 100,  # M0(W_high,L_high,M_high) 
+                                        10, 5, 100,     # M5
+                                        10, 5, 100,     # M8  
+                                        10, 5, 100,     # M10
+                                        10, 5, 500,     # M11
+                                        10, 5, 100,     # M15
+                                        10, 5, 100,     # M17
+                                        10, 5, 100,     # M23
+                                        10, 5, 100,     # M60
+                                        10, 5, 100,     # M70
+                                        10, 5, 100,     # M73
+                                        10, 5, 100,     # M74
+                                        10, 5, 100,     # M75
+                                        10, 5, 100,     # M76
+                                        50e-6,         # Ib  
+                                        M_C0_high,])   # C0:50
+        
+        self.action_dim = len(self.action_space_low)
+        self.action_shape = (self.action_dim,)    
+        
+        """Some target specifications for the final design"""
+        self.PSRP_target = -90
+        self.PSRN_target = -90 
+        
+        self.TC_target = 1e-6
+        self.Power_target = 2e2
+        self.vos_target = 4e-5
+        
+        self.cmrrdc_target = -80 
+        self.dcgain_target = 130
+        self.GBW_target = 1e6
+        self.phase_margin_target = 60 
+
+        self.sr_target = 4e5
+        self.settlingTime_target = 5e-6
+        self.GND = 0
+        self.Vdd = 1.8
+        
+        self.rew_eng = True        
+
+class GraphAMPRAFFC:
+    """                                                                                                                           
+    node 0 : M0 , node 1 : M1 , node 2 : M2 , node 3 : M3 , node 4 : M4 , node 5 : M5
+    node 6 : M6 , node 7 : M7 , node 8 : M8 , node 9 : M9 , node 10 : M10 , node 11 : M11
+    node 12 : M12 , node 13 : M13 , node 14 : M14 , node 15 : M15 , node 16 : M16 , node17 : M17 ,
+    node 18 : M18 , node 19 : M19 , node 20 : M20 , node 21 : M21 , node 22 : M22 ,   
+    node23 : M59 , node24 : Ib , node25 : VDD , node26 : GND , node27 : C0 , node28 : C1
+    """
+    def __init__(self):        
+        # self.device = torch.device(
+        #     "cuda:0" if torch.cuda.is_available() else "cpu"
+        # )
+        
+        self.device = torch.device(
+           "cpu"
+        )
+        self.ckt_hierarchy = (
+                      ('M0','x1.XM0','pfet_01v8','m'),
+                      ('M1','x1.XM1','pfet_01v8','m'),
+                      ('M2','x1.XM2','pfet_01v8','m'),
+                      ('M3','x1.XM3','pfet_01v8','m'),
+                      ('M4','x1.XM4','pfet_01v8','m'),
+                      ('M5','x1.XM5','pfet_01v8','m'),
+                      ('M6','x1.XM6','pfet_01v8','m'),
+                      ('M7','x1.XM7','pfet_01v8','m'),
+                      ('M8','x1.XM8','pfet_01v8','m'),
+                      ('M9','x1.XM9','pfet_01v8','m'),
+                      ('M10','x1.XM10','pfet_01v8','m'),
+                      ('M11','x1.XM11','pfet_01v8','m'),
+                      ('M12','x1.XM12','nfet_01v8','m'),
+                      ('M13','x1.XM13','nfet_01v8','m'),
+                      ('M14','x1.XM14','nfet_01v8','m'),
+                      ('M15','x1.XM15','nfet_01v8','m'),
+                      ('M16','x1.XM16','nfet_01v8','m'),
+                      ('M17','x1.XM17','nfet_01v8','m'),
+                      ('M18','x1.XM18','nfet_01v8','m'),
+                      ('M19','x1.XM19','nfet_01v8','m'),
+                      ('M20','x1.XM20','nfet_01v8','m'),
+                      ('M21','x1.XM21','nfet_01v8','m'),
+                      ('M22','x1.XM22','nfet_01v8','m'),
+                      ('M59','x1.XM59','nfet_01v8','m'),
+
+                      ('Ib','','Ib','i'),
+                      ('C0','x1.XC0','cap_mim_m3_1','c'),
+                      ('C1','x1.XC1','cap_mim_m3_1','c')
+                     )    
+
+        self.op = {'M0':{},'M1':{},'M2':{},'M3':{},'M4':{},'M5':{},'M6':{},'M7':{},'M8':{}, 'M9':{},'M10':{},'M11':{},
+                'M12':{},'M13':{},'M14':{},'M15':{},'M16':{},'M17':{},'M18':{},'M19':{},'M20':{},'M21':{},'M22':{},'M59':{},
+                'Ib':{},'C0':{},'C1':{}
+                 }
+
+        self.edge_index = torch.tensor([
+          [0,1], [1,0], [0,2], [2,0], [0,3], [3,0], [0,4], [4,0], [0,24], [24,0], [0,25], [25,0], 
+          [1,2], [2,1], [1,3], [3,1], [1,4], [4,1], [1,25], [25,1], [1,12], [12,1], [1,24], [24,1], [1,17], [17,1], [1,18], [18,1], [1,19], [19,1], [1,20], [20,1], [1,23], [23,1], 
+          [2,3], [3,2], [2,4], [4,2], [2,24], [24,2], [2,13], [13,2], [2,25], [25,2],  
+          [3,4], [4,3], [3,24], [24,3], [3,25], [25,3], [3,12], [12,3], [3,13], [13,3], [3,14], [14,3], [3,15], [15,3], [3,16], [16,3],        
+          [4,24], [24,4], [4,8], [8,4], [4,9], [9,4], [4,25], [25,4],
+          [5,6], [6,5], [5,15], [15,5], [5,25], [25,5], 
+          [6,15], [15,6], [6,16], [16,6], [6,10], [10,6], [6,11], [11,6], [6,25], [25,6], [6,28], [28,6],
+          [7,25], [25,7], [7,22], [22,7], [7,21], [21,7], [7,10], [10,7], [7,23], [23,7], [7,28], [28,7],
+          [8,9], [9,8], [8,15], [15,8], [8,19], [19,8], 
+          [9,16], [16,9], [9,20], [20,9], [9,27], [27,9], 
+          [10,11], [11,10], [10,16], [16,10], [10,28], [28,10], [10,23], [23,10], [10,25], [25,10], 
+          [11,25], [25,11], [11,16], [16,11], [11,28], [28,11], [11,27], [27,11], [11,22], [22,11], 
+          [12,13], [13,12], [12,14], [14,12], [12,15], [15,12], [12,16], [16,12], [12,17], [17,12], [12,18], [18,12], [12,19], [19,12], [12,20], [20,12], [12,23], [23,12],
+          [13,14], [14,13], [13,15], [15,13], [13,16], [16,13], [13,18], [18,13],
+          [14,15], [15,14], [14,16], [16,14], [14,26], [26,14],
+          [15,16], [16,15], [15,19], [19,15], 
+          [16,20], [20,16], [16,28], [28,16], [16,27], [27,16], 
+          [17,18], [18,17], [17,19], [19,17], [17,20], [20,17], [17,23], [23,17], [17,26], [26,17], 
+          [18,19], [19,18], [18,20], [20,18], [18,23], [23,18], [18,26], [26,18],
+          [19,20], [20,19], [19,23], [23,19], [19,26], [26,19], 
+          [20,26], [26,20], [20,27], [27,20], [20,23], [23,20], 
+          [21,22], [22,21], [21,26], [26,21], 
+          [22,26], [26,22], [22,27], [27,22],
+          [23,26], [26,23], [23,28], [28,23], 
+          [24,26], [26,24]
+            ], dtype=torch.long).t().to(self.device)
+        
+        self.edge_type = torch.tensor([
+            0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1,                   # M0
+            0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   # M1
+            0, 0, 0, 0, 1, 1, 0, 0, 1, 1,                         # M2
+            0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,       # M3
+            1, 1, 0, 0, 0, 0, 1, 1,                               # M4
+            0, 0, 0, 0, 1, 1,                                     # M5
+            0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0,                   # M6
+            1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,                   # M7
+            0, 0, 0, 0, 0, 0,                                     # M8
+            0, 0, 0, 0, 0, 0,                                     # M9
+            0, 0, 0, 0, 0, 0, 0, 0, 1, 1,                         # M10
+            1, 1, 0, 0, 0, 0, 0, 0, 0, 0,                         # M11
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, # M12
+            0, 0, 0, 0, 0, 0, 0, 0,                               # M13
+            0, 0, 0, 0, 1, 1,                                     # M14
+            0, 0, 0, 0,                                           # M15
+            0, 0, 0, 0, 0, 0,                                     # M16
+            0, 0, 0, 0, 0, 0, 0, 0, 1, 1,                         # M17
+            0, 0, 0, 0, 0, 0, 1, 1,                               # M18
+            0, 0, 0, 0, 1, 1,                                     # M19
+            1, 1, 0, 0, 0, 0,                                     # M20
+            0, 0, 1, 1,                                           # M21
+            1, 1, 0, 0,                                           # M22
+            1, 1, 0, 0,                                           # M23
+            1, 1,                                                 # Ib
+            ]).to(self.device)
+        
+        self.num_relations = 2
+        self.num_nodes = 29
+        self.num_node_features = 12
+        self.obs_shape = (self.num_nodes, self.num_node_features)
+
+        """Select an action from the input state."""
+
+        self.L_C1 = 10 
+        self.W_C1 = 10
+        M_C1_low = 1
+        M_C1_high = 30 
+        self.C1_low = M_C1_low * (self.L_C1 * self.W_C1 * 2e-15 + (self.L_C1 + self.W_C1)*0.38e-15)   # 0.2076 pF
+        self.C1_high = M_C1_high * (self.L_C1 * self.W_C1 * 2e-15 + (self.L_C1 + self.W_C1)*0.38e-15) # 6.228pF 
+        
+        self.W_C0 = 30
+        self.L_C0 = 30
+        M_C0_low = 1
+        M_C0_high = 30
+        self.C0_low = M_C0_low * (self.L_C0 * self.W_C0 * 2e-15 + (self.L_C0 + self.W_C0) *0.38e-15)  # 1.823 pF
+        self.C0_high = M_C0_high * (self.L_C0 * self.W_C0 * 2e-15 + (self.L_C0 + self.W_C0)*0.38e-15) # 54.69 pF
+        
+        self.action_space_low = np.array([ 0.5, 0.5, 1, # M0(W_low,L_low,M_low)
+                                        0.5, 0.5, 1,    # M7
+                                        0.5, 0.5, 1,    # M8
+                                        0.5, 0.5, 1,    # M10
+                                        0.5, 0.5, 100,  # M11
+                                        0.5, 0.5, 1,    # M15
+                                        0.5, 0.5, 1,    # M17
+                                        0.5, 0.5, 1,    # M21
+                                        1e-6,           # Ib
+                                        M_C0_low,       # C0
+                                        M_C1_low])      # C1
+        
+        self.action_space_high = np.array([10, 5, 50,  # M0(W_high,L_high,M_high) 
+                                        10, 5, 50,     # M7  
+                                        10, 5, 50,     # M8  
+                                        10, 5, 50,     # M10
+                                        10, 5, 500,    # M11
+                                        10, 5, 50,     # M15
+                                        10, 5, 50,     # M17
+                                        10, 5, 50,     # M21
+                                        30e-6,         # Ib  
+                                        M_C0_high,     # C0
+                                        M_C1_high])    # C1
+        
+        self.action_dim = len(self.action_space_low)
+        self.action_shape = (self.action_dim,)    
+        
+        """Some target specifications for the final design"""
+        self.phase_margin_target = 60 
+        self.CL = 500  #100pF
+        self.dcgain_target = 130
+        self.PSRP_target = -80
+        self.PSRN_target = -80 
+        self.cmrrdc_target = -80
+        self.vos_target = 0.06e-3   
+        self.TC_target = 10e-6
+        self.settlingTime_target = 1e-6
+        self.FOML_target = 2000
+        self.FOMS_target = 2000
+        self.Active_Area_target = 150
+        self.Power_target = 0.3
+        self.GBW_target = 1.2e6
+        self.sr_target = 1.2        
+
+        """ baseline """
+        self.PSRR_base = -60
+        self.cmrrdc_base = -60
+        self.dcgain_base = 90
+        self.FOMS_base = 1000
+        self.FOML_base = 1000
+        self.settlingTime_base = 5e-6
+        self.Active_Area_base = 200
+        self.TC_base = 50e-6
+        self.vos_base = 0.1e-3
+        self.Power_base = 0.4
+        self.sr_base = 0.8
+        self.GBW_base = 0.8e6
+
+        self.GND = 0
+        self.Vdd = 1.8      
+
+class GraphAMPAZ:
+    """                                                                                                                           
+    node 0 : M0 , node 1 : M1 , node 2 : M2 , node 3 : M3 , node 4 : M4 , node 5 : M5
+    node 6 : M6 , node 7 : M7 , node 8 : M8 , node 9 : M9 , node 10 : M10 , node 11 : M11
+    node 12 : M12 , node 13 : M13 , node 14 : M14 , node 15 : M15 , node 16 : M16 , node17 : M17 ,
+    node 18 : M18 , node 19 : M19 , node 20 : M20 , node 21 : R0 , node 22 : R1 ,   
+    node23 : R2 , node24 : Ib , node25 : VDD , node26 : GND , node27 : C0 , node28 : C1 
+    """
+    def __init__(self):        
+        # self.device = torch.device(
+        #     "cuda:0" if torch.cuda.is_available() else "cpu"
+        # )
+        
+        self.device = torch.device(
+           "cpu"
+        )
+        # we do not include R here since, it is not straght forward to get the resistance from resistor in SKY130 PDK
+        self.ckt_hierarchy = (
+                      ('M0','x1.XM0','pfet_01v8','m'),
+                      ('M1','x1.XM1','pfet_01v8','m'),
+                      ('M2','x1.XM2','pfet_01v8','m'),
+                      ('M3','x1.XM3','pfet_01v8','m'),
+                      ('M4','x1.XM4','pfet_01v8','m'),
+                      ('M5','x1.XM5','pfet_01v8','m'),
+                      ('M6','x1.XM6','pfet_01v8','m'),
+                      ('M7','x1.XM7','pfet_01v8','m'),
+                      ('M8','x1.XM8','pfet_01v8','m'),
+                      ('M9','x1.XM9','pfet_01v8','m'),
+                      ('M10','x1.XM10','pfet_01v8','m'),
+                      ('M11','x1.XM11','nfet_01v8','m'),
+                      ('M12','x1.XM12','nfet_01v8','m'),
+                      ('M13','x1.XM13','nfet_01v8','m'),
+                      ('M14','x1.XM14','nfet_01v8','m'),
+                      ('M15','x1.XM15','nfet_01v8','m'),
+                      ('M16','x1.XM16','nfet_01v8','m'),
+                      ('M17','x1.XM17','nfet_01v8','m'),
+                      ('M18','x1.XM18','nfet_01v8','m'),
+                      ('M19','x1.XM19','nfet_01v8','m'),
+                      ('M20','x1.XM20','nfet_01v8','m'),
+
+                      ('Ib','','Ib','i'),
+                      ('C0','x1.XC0','cap_mim_m3_1','c'),
+                      ('C1','x1.XC1','cap_mim_m3_1','c')
+                     )    
+
+        self.op = {'M0':{},'M1':{},'M2':{},'M3':{},'M4':{},'M5':{},'M6':{},'M7':{},'M8':{}, 'M9':{},'M10':{},'M11':{},
+                'M12':{},'M13':{},'M14':{},'M15':{},'M16':{},'M17':{},'M18':{},'M19':{},'M20':{},
+                'Ib':{},'C0':{},'C1':{}}
+
+        self.edge_index = torch.tensor([
+          [0,1], [1,0], [0,2], [2,0], [0,3], [3,0], [0,24], [24,0], [0,25], [25,0], 
+          [1,2], [2,1], [1,3], [3,1], [1,25], [25,1], [1,24], [24,1], [1,16], [16,1], [1,17], [17,1], [1,18], [18,1],
+          [2,3], [3,2], [2,24], [24,2], [2,25], [25,2], [2,7], [7,2], [2,8], [8,2], 
+          [3,24], [24,3], [3,25], [25,3], [3,21], [21,3], [3,22], [22,3], 
+          [4,5], [5,4], [4,6], [6,4], [4,11], [11,4], [4,25], [25,4],
+          [5,6], [6,5], [5,11], [11,5], [5,25], [25,5], [5,9], [9,5], [5,10], [10,5], [5,12], [12,5],
+          [6,11], [11,6], [6,25], [25,6], [6,15], [15,6], [6,20], [20,6], 
+          [7,8], [8,7], [7,11], [11,7], [7,13], [13,7], [7,17], [17,7], 
+          [8,12], [12,8], [8,14], [14,8], [8,18], [18,8], [8,27], [27,8],  
+          [9,10], [10,9], [9,12], [12,9], [9,25], [25,9], [9,19], [19,9], [9,20], [20,9], [9,23], [23,9], 
+          [10,15], [15,10], [10,27], [27,10], [10,12], [12,10], [10,25], [25,10],
+          [11,13], [13,11], [11,21], [21,11], [11,17], [17,11], 
+          [12,14], [14,12], [12,22], [22,12], [12,18], [18,12], [12,27], [27,12], 
+          [13,21], [21,13], [13,17], [17,13], [13,26], [26,13], 
+          [14,22], [22,14], [14,18], [18,14], [14,27], [27,14], [14,26], [26,14], 
+          [15,27], [27,15], [15,20], [20,15], [15,26], [26,15], 
+          [16,17], [17,16], [16,18], [18,16], [16,26], [26,16],
+          [17,18], [18,17], [17,26], [26,17],
+          [18,27], [27,18], [18,26], [26,18],   
+          [19,20], [20,19], [19,23], [23,19], [19,28], [28,19], [19,26], [26,19],   
+          [20,23], [23,20], [20,26], [26,20],   
+          [21,22], [22,21],        
+          [23,28], [28,23],
+          [24,26], [26,24], 
+          [28,26], [26,28]
+            ], dtype=torch.long).t().to(self.device)
+        
+        self.edge_type = torch.tensor([
+            0, 0, 0, 0, 0, 0, 1, 1, 1, 1,               # M0
+            0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0,   # M1
+            0, 0, 1, 1, 1, 1, 0, 0, 0, 0,               # M2
+            1, 1, 1, 1, 0, 0, 0, 0,                     # M3
+            0, 0, 0, 0, 0, 0, 1, 1,                     # M4
+            0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0,         # M5
+            0, 0, 1, 1, 0, 0, 0, 0,                     # M6
+            0, 0, 0, 0, 0, 0, 0, 0,                     # M7
+            0, 0, 0, 0, 0, 0, 0, 0,                     # M8
+            0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0,         # M9
+            0, 0, 0, 0, 0, 0, 1, 1,                     # M10
+            0, 0, 0, 0, 0, 0,                           # M11
+            0, 0, 0, 0, 0, 0, 0, 0,                     # M12
+            0, 0, 0, 0, 1, 1,                           # M13
+            0, 0, 0, 0, 0, 0, 1, 1,                     # M14
+            0, 0, 0, 0, 1, 1,                           # M15
+            0, 0, 0, 0, 1, 1,                           # M16
+            0, 0, 1, 1,                                 # M17
+            0, 0, 1, 1,                                 # M18
+            0, 0, 0, 0, 0, 0, 1, 1,                     # M19
+            0, 0, 1, 1,                                 # M20
+            0, 0,                                       # M21
+            0, 0,                                       # M23
+            1, 1,                                       # Ib
+            1, 1,                                       # C1
+            ]).to(self.device)
+        
+        self.num_relations = 2
+        self.num_nodes = 29
+        self.num_node_features = 15
+        self.obs_shape = (self.num_nodes, self.num_node_features)
+
+        """Select an action from the input state."""
+
+        self.L_C1 = 10 
+        self.W_C1 = 10
+        M_C1_low = 1
+        M_C1_high = 50 
+        self.C1_low = M_C1_low * (self.L_C1 * self.W_C1 * 2e-15 + (self.L_C1 + self.W_C1)*0.38e-15)   # 0.2076 pF
+        self.C1_high = M_C1_high * (self.L_C1 * self.W_C1 * 2e-15 + (self.L_C1 + self.W_C1)*0.38e-15) # 10.38 pF
+        
+        self.W_C0 = 10
+        self.L_C0 = 10
+        M_C0_low = 1
+        M_C0_high = 50
+        self.C0_low = M_C0_low * (self.L_C0 * self.W_C0 * 2e-15 + (self.L_C0 + self.W_C0) *0.38e-15)  # 0.2076 pF
+        self.C0_high = M_C0_high * (self.L_C0 * self.W_C0 * 2e-15 + (self.L_C0 + self.W_C0)*0.38e-15) # 10.38 pF
+        
+        self.W_R0 = 0.35 # W: 0.35um
+        self.L_R0 = 90 # L: 90um
+        M_R0_low = 1
+        M_R0_high = 20
+        self.Rsheet = 1112.4
+        self.R0_low =  self.Rsheet * self.L_R0 / self.W_R0 / M_R0_high  # 14.302kΩ
+        self.R0_high = self.Rsheet * self.L_R0 / self.W_R0 / M_R0_low   # 286.045kΩ
+
+        self.W_R1 = 0.35 # W: 0.35um
+        self.L_R1 = 30 # L: 30um
+        M_R1_low = 1
+        M_R1_high = 20
+        self.Rsheet = 1112.4
+        self.R1_low =  self.Rsheet * self.L_R1 / self.W_R1 / M_R1_high  # 4.767kΩ
+        self.R1_high = self.Rsheet * self.L_R1 / self.W_R1 / M_R1_low   # 95.348kΩ
+
+        self.W_R2 = 0.35 # W: 0.35um
+        self.L_R2 = 30 # L: 30um
+        M_R2_low = 1
+        M_R2_high = 20
+        self.Rsheet = 1112.4
+        self.R2_low =  self.Rsheet * self.L_R2 / self.W_R2 / M_R2_high  # 4.767kΩ
+        self.R2_high = self.Rsheet * self.L_R2 / self.W_R2 / M_R2_low   # 95.348kΩ
+
+        self.action_space_low = np.array([ 0.5, 0.5, 1, # M0(W_low,L_low,M_low)
+                                        0.5, 0.5, 1,    # M7
+                                        0.5, 0.5, 1,    # M9
+                                        0.5, 0.5, 10,   # M10
+                                        0.5, 0.5, 1,    # M11
+                                        0.5, 0.5, 1,    # M13
+                                        0.5, 0.5, 1,    # M15
+                                        0.5, 0.5, 1,    # M16
+                                        0.5, 0.5, 1,    # M19
+                                        0.5, 0.5, 1,    # M20
+                                        1e-6,          # Ib
+                                        M_C0_low,      # C0: 0.2076 pF
+                                        M_C1_low,      # C1: 0.2076 pF 
+                                        M_R0_low,      # R0: 14.302kΩ
+                                        M_R1_low,      # R1: 4.767kΩ
+                                        M_R2_low,      # R2: 4.767kΩ
+                                        ])   
+        
+        self.action_space_high = np.array([10, 5, 50,  # M0(W_high,L_high,M_high) 
+                                        10, 5, 50,     # M7
+                                        10, 5, 50,     # M9
+                                        10, 5, 500,    # M10  
+                                        10, 5, 50,     # M11
+                                        10, 5, 50,     # M13
+                                        10, 5, 50,     # M15 
+                                        10, 5, 50,     # M16
+                                        10, 5, 50,     # M19
+                                        10, 5, 50,     # M20
+                                        30e-6,         # Ib  
+                                        M_C0_high,     # C0:10.38 pF
+                                        M_C1_high,     # C1:10.38 pF
+                                        M_R0_high,     # R0:286.045kΩ
+                                        M_R1_high,     # R0:95.348kΩ
+                                        M_R2_high,     # R0:95.348kΩ
+                                        ])
+        
+        self.action_dim = len(self.action_space_low)
+        self.action_shape = (self.action_dim,)    
+        
+        """Some target specifications for the final design"""
+        self.phase_margin_target = 60 
+        self.CL = 15000  #100pF
+        self.dcgain_target = 130
+        self.PSRP_target = -80
+        self.PSRN_target = -80 
+        self.cmrrdc_target = -80
+        self.vos_target = 0.06e-3   
+        self.TC_target = 10e-6
+        self.settlingTime_target = 1e-6
+        self.FOML_target = 5000
+        self.FOMS_target = 250000
+        self.Active_Area_target = 80
+        self.Power_target = 0.3         
+        self.GBW_target = 5e6
+        self.sr_target = 0.1
+
+        """ baseline """
+        self.PSRR_base = -60
+        self.cmrrdc_base = -60
+        self.dcgain_base = 90
+        self.FOML_base = 500
+        self.FOMS_base = 100000
+        self.settlingTime_base = 5e-6
+        self.Active_Area_base = 100
+        self.TC_base = 50e-6
+        self.vos_base = 0.1e-3    
+        self.Power_base = 0.6
+        self.sr_base = 0.02
+        self.GBW_base = 4e6
+
+        self.GND = 0
+        self.Vdd = 1.8    
+
+class GraphAMPAZC:
+    """                                                                                                                           
+    node 0 : M0 , node 1 : M1 , node 2 : M2 , node 3 : M3 , node 4 : M4 , node 5 : M5
+    node 6 : M6 , node 7 : M7 , node 8 : M8 , node 9 : M9 , node 10 : M10 , node 11 : M11
+    node 12 : M12 , node 13 : M13 , node 14 : M14 , node 15 : M15 , node 16 : M16 , node17 : M17 ,
+    node 18 : M18 , node 19 : M19 , node 20 : M20 , node 21 : M21 , node 22 : M22 ,   
+    node23 : M23 , node24 : M24 , node25 : VDD , node26 : GND , node27 : C0 , node28 : C1 ,node 29 : C2,
+    node30 : R0 , node31 : R1, node32 : R2 , node33 : R3 , node34 : Ib
+    """
+    def __init__(self):        
+        # self.device = torch.device(
+        #     "cuda:0" if torch.cuda.is_available() else "cpu"
+        # )
+        
+        self.device = torch.device(
+           "cpu"
+        )
+        # we do not include R here since, it is not straght forward to get the resistance from resistor in SKY130 PDK
+        self.ckt_hierarchy = (
+                      ('M0','x1.XM0','pfet_01v8','m'),
+                      ('M1','x1.XM1','pfet_01v8','m'),
+                      ('M2','x1.XM2','pfet_01v8','m'),
+                      ('M3','x1.XM3','pfet_01v8','m'),
+                      ('M4','x1.XM4','pfet_01v8','m'),
+                      ('M5','x1.XM5','pfet_01v8','m'),
+                      ('M6','x1.XM6','pfet_01v8','m'),
+                      ('M7','x1.XM7','pfet_01v8','m'),
+                      ('M8','x1.XM8','pfet_01v8','m'),
+                      ('M9','x1.XM9','pfet_01v8','m'),
+                      ('M10','x1.XM10','pfet_01v8','m'),
+                      ('M11','x1.XM11','pfet_01v8','m'),
+                      ('M12','x1.XM12','nfet_01v8','m'),
+                      ('M13','x1.XM13','pfet_01v8','m'),
+                      ('M14','x1.XM14','nfet_01v8','m'),
+                      ('M15','x1.XM15','nfet_01v8','m'),
+                      ('M16','x1.XM16','nfet_01v8','m'),
+                      ('M17','x1.XM17','nfet_01v8','m'),
+                      ('M18','x1.XM18','nfet_01v8','m'),
+                      ('M19','x1.XM19','nfet_01v8','m'),
+                      ('M20','x1.XM20','nfet_01v8','m'),
+                      ('M21','x1.XM21','nfet_01v8','m'),
+                      ('M22','x1.XM22','nfet_01v8','m'),
+                      ('M23','x1.XM23','nfet_01v8','m'),
+                      ('M24','x1.XM24','nfet_01v8','m'),
+
+                      ('Ib','','Ib','i'),
+                      ('C0','x1.XC0','cap_mim_m3_1','c'),
+                      ('C1','x1.XC1','cap_mim_m3_1','c'),
+                      ('C2','x1.XC2','cap_mim_m3_1','c')
+                     )    
+
+        self.op = {'M0':{},'M1':{},'M2':{},'M3':{},'M4':{},'M5':{},'M6':{},'M7':{},'M8':{}, 'M9':{},'M10':{},'M11':{},
+                'M12':{},'M13':{},'M14':{},'M15':{},'M16':{},'M17':{},'M18':{},'M19':{},'M20':{},'M21':{},'M22':{},'M23':{},'M24':{},
+                'Ib':{},'C0':{},'C1':{},'C2':{}}
+
+        self.edge_index = torch.tensor([
+          [0,1], [1,0], [0,2], [2,0], [0,3], [3,0], [0,8], [8,0], [0,34], [34,0], [0,25], [25,0], 
+          [1,2], [2,1], [1,3], [3,1], [1,8], [8,1], [1,25], [25,1], [1,34], [34,1], [1,19], [19,1], [1,20], [20,1], [1,21], [21,1],
+          [2,3], [3,2], [2,8], [8,2], [2,34], [34,2], [2,25], [25,2], [2,9], [9,2], [2,10], [10,2],
+          [3,8], [8,3], [3,34], [34,3], [3,25], [25,3], [3,30], [30,3], [3,31], [31,3], 
+          [4,5], [5,4], [4,14], [14,4], [4,25], [25,4],
+          [5,14], [14,5], [5,25], [25,5], [5,11], [11,5], [5,13], [13,5], [5,15], [15,5],
+          [6,7], [7,6], [6,25], [25,6], [6,12], [12,6], 
+          [7,12], [12,7], [7,23], [23,7], [7,24], [24,7], [7,32], [32,7], [7,33], [33,7], [7,25], [25,7],
+          [8,18], [18,8], [8,24], [24,8], [8,25], [25,8], [8,34], [34,8],
+          [9,14], [14,9], [9,16], [16,9], [9,20], [20,9], [9,10], [10,9], 
+          [10,15], [15,10], [10,17], [17,10], [10,21], [21,10], [10,27], [27,10],
+          [11,12], [12,11], [11,22], [22,11], [11,13], [13,11], [11,15], [15,11], [11,25], [25,11], 
+          [12,22], [22,12], [12,26], [26,12], 
+          [13,27], [27,13], [13,18], [18,13], [13,15], [15,13], [13,25], [25,13], 
+          [14,16], [16,14], [14,30], [30,14], [14,20], [20,14], 
+          [15,17], [17,15], [15,31], [31,15], [15,21], [21,15], [15,27], [27,15],
+          [16,30], [30,16], [16,20], [20,16], [16,26], [26,16],
+          [17,31], [31,17], [17,21], [21,17], [17,27], [27,17], [17,26], [26,17],
+          [18,27], [27,18], [18,24], [24,18], [18,26], [26,18],   
+          [19,20], [20,19], [19,21], [21,19], [19,26], [26,19], 
+          [20,21], [21,20], [20,26], [26,20],  
+          [21,27], [27,21], [21,26], [26,21],         
+          [22,28], [28,22], [22,32], [32,22], [22,26], [26,22], 
+          [23,24], [24,23], [23,32], [32,23], [23,33], [33,23], [23,26], [26,23], [23,29], [29,23],
+          [24,32], [32,24], [24,33], [33,24], [24,26], [26,24],
+          [28,32], [32,28], [28,26], [26,28],
+          [29,33], [33,29], [29,26], [26,29],
+          [30,31], [31,30],
+          [32,33], [33,32]
+            ], dtype=torch.long).t().to(self.device)
+        
+        self.edge_type = torch.tensor([
+            0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1,             # M0
+            0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, # M1
+            0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0,             # M2
+            0, 0, 1, 1, 1, 1, 0, 0, 0, 0,                   # M3
+            0, 0, 0, 0, 1, 1,                               # M4
+            0, 0, 1, 1, 0, 0, 0, 0, 0, 0,                   # M5
+            0, 0, 1, 1, 0, 0,                               # M6
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1,             # M7
+            0, 0, 0, 0, 1, 1, 1, 1,                         # M8
+            0, 0, 0, 0, 0, 0, 0, 0,                         # M9
+            0, 0, 0, 0, 0, 0, 0, 0,                         # M10
+            0, 0, 0, 0, 0, 0, 0, 0, 1, 1,                   # M11
+            0, 0, 1, 1,                                     # M12
+            0, 0, 0, 0, 0, 0, 1, 1,                         # M13
+            0, 0, 0, 0, 0, 0,                               # M14
+            0, 0, 0, 0, 0, 0, 0, 0,                         # M15
+            0, 0, 0, 0, 1, 1,                               # M16
+            0, 0, 0, 0, 0, 0, 1, 1,                         # M17
+            0, 0, 0, 0, 1, 1,                               # M18
+            0, 0, 0, 0, 1, 1,                               # M19
+            0, 0, 1, 1,                                     # M20
+            0, 0, 1, 1,                                     # M21
+            0, 0, 0, 0, 1, 1,                               # M22
+            0, 0, 0, 0, 0, 0, 1, 1, 0, 0,                   # M23
+            0, 0, 0, 0, 1, 1,                               # M24
+            0, 0, 1, 1,                                     # C1
+            0, 0, 1, 1,                                     # C2
+            0, 0,                                           # R0
+            0, 0,                                           # R2
+            ]).to(self.device)
+        
+        self.num_relations = 2
+        self.num_nodes = 35
+        self.num_node_features = 17
+        self.obs_shape = (self.num_nodes, self.num_node_features)
+
+        """Select an action from the input state."""
+
+        self.L_C2 = 10
+        self.W_C2 = 10
+        M_C2_low = 1
+        M_C2_high = 50 
+        self.C2_low = M_C2_low * (self.L_C2 * self.W_C2 * 2e-15 + (self.L_C2 + self.W_C2)*0.38e-15)   # 0.2076 pF
+        self.C2_high = M_C2_high * (self.L_C2 * self.W_C2 * 2e-15 + (self.L_C2 + self.W_C2)*0.38e-15) # 10.38 pF
+
+        self.L_C1 = 10 
+        self.W_C1 = 10
+        M_C1_low = 1
+        M_C1_high = 50 
+        self.C1_low = M_C1_low * (self.L_C1 * self.W_C1 * 2e-15 + (self.L_C1 + self.W_C1)*0.38e-15)   # 0.2076 pF
+        self.C1_high = M_C1_high * (self.L_C1 * self.W_C1 * 2e-15 + (self.L_C1 + self.W_C1)*0.38e-15) # 10.38 pF
+        
+        self.W_C0 = 10
+        self.L_C0 = 10
+        M_C0_low = 1
+        M_C0_high = 50
+        self.C0_low = M_C0_low * (self.L_C0 * self.W_C0 * 2e-15 + (self.L_C0 + self.W_C0) *0.38e-15)  # 0.2076 pF
+        self.C0_high = M_C0_high * (self.L_C0 * self.W_C0 * 2e-15 + (self.L_C0 + self.W_C0)*0.38e-15) # 10.38 pF
+        
+        self.W_R0 = 0.35 # W: 0.35um
+        self.L_R0 = 30 # L: 30um
+        M_R0_low = 1
+        M_R0_high = 20
+        self.Rsheet = 1112.4
+        self.R0_low =  self.Rsheet * self.L_R0 / self.W_R0 / M_R0_high  # 4.767kΩ
+        self.R0_high = self.Rsheet * self.L_R0 / self.W_R0 / M_R0_low   # 95.348kΩ
+
+        self.W_R1 = 0.35 # W: 0.35um
+        self.L_R1 = 30 # L: 30um
+        M_R1_low = 1
+        M_R1_high = 20
+        self.Rsheet = 1112.4
+        self.R1_low =  self.Rsheet * self.L_R1 / self.W_R1 / M_R1_high  # 4.767kΩ
+        self.R1_high = self.Rsheet * self.L_R1 / self.W_R1 / M_R1_low   # 95.348kΩ
+
+        self.W_R2 = 0.35 # W: 0.35um
+        self.L_R2 = 120 # L: 120um
+        M_R2_low = 1
+        M_R2_high = 20
+        self.Rsheet = 1112.4
+        self.R2_low =  self.Rsheet * self.L_R2 / self.W_R2 / M_R2_high  # 19.069kΩ
+        self.R2_high = self.Rsheet * self.L_R2 / self.W_R2 / M_R2_low   # 381.38kΩ
+
+        self.W_R3 = 0.35 # W: 0.35um
+        self.L_R3 = 30 # L: 30um
+        M_R3_low = 1
+        M_R3_high = 20
+        self.Rsheet = 1112.4
+        self.R3_low =  self.Rsheet * self.L_R3 / self.W_R3 / M_R3_high  # 4.767kΩ
+        self.R3_high = self.Rsheet * self.L_R3 / self.W_R3 / M_R3_low   # 95.348kΩ
+
+        self.action_space_low = np.array([ 0.5, 0.5, 1, # M0(W_low,L_low,M_low)
+                                        0.5, 0.5, 1,    # M6
+                                        0.5, 0.5, 1,    # M9
+                                        0.5, 0.5, 1,    # M11
+                                        0.5, 0.5, 1,    # M12
+                                        0.5, 0.5, 10,   # M13
+                                        0.5, 0.5, 1,    # M14
+                                        0.5, 0.5, 1,    # M18
+                                        0.5, 0.5, 1,    # M19
+                                        0.5, 0.5, 1,    # M24
+                                        1e-6,          # Ib
+                                        M_C0_low,      # C0： 0.2076 pF
+                                        M_C1_low,      # C1： 0.2076 pF 
+                                        M_C2_low,      # C2： 0.2076 pF
+                                        M_R0_low,      # R0： 4.767kΩ
+                                        M_R1_low,      # R1： 4.767kΩ
+                                        M_R2_low,      # R2： 19.069kΩ
+                                        M_R3_low,      # R3： 4.767kΩ
+                                        ])   
+        
+        self.action_space_high = np.array([10, 5, 50,  # M0(W_high,L_high,M_high) 
+                                        10, 5, 50,     # M6
+                                        10, 5, 50,     # M9
+                                        10, 5, 50,     # M11  
+                                        10, 5, 50,     # M12
+                                        10, 5, 500,    # M13
+                                        10, 5, 50,     # M14 
+                                        10, 5, 50,     # M18
+                                        10, 5, 50,     # M19
+                                        10, 5, 50,     # M24
+                                        30e-6,         # Ib  
+                                        M_C0_high,     # C0： 10.38 pF
+                                        M_C1_high,     # C1： 10.38 pF
+                                        M_C2_high,     # C2： 10.38 pF
+                                        M_R0_high,     # R0： 95.348kΩ
+                                        M_R1_high,     # R1： 95.348kΩ
+                                        M_R2_high,     # R2： 381.38kΩ
+                                        M_R3_high,     # R3： 95.348kΩ
+                                        ])
+        
+        self.action_dim = len(self.action_space_low)
+        self.action_shape = (self.action_dim,)    
+        
+        """Some target specifications for the final design"""
+        self.phase_margin_target = 60 
+        self.CL = 18000  #100pF
+        self.dcgain_target = 130
+        self.PSRP_target = -80
+        self.PSRN_target = -80 
+        self.cmrrdc_target = -80
+        self.vos_target = 0.06e-3   
+        self.TC_target = 10e-6
+        self.settlingTime_target = 1e-6
+        self.FOML_target = 10800
+        self.FOMS_target = 108000
+        self.Active_Area_target = 80
+        self.Power_target = 0.5         
+        self.GBW_target = 3e6
+        self.sr_target = 0.3
+
+        """ baseline """
+        self.PSRR_base = -60
+        self.cmrrdc_base = -60
+        self.dcgain_base = 90
+        self.FOML_base = 5000
+        self.FOMS_base = 60000
+        self.settlingTime_base = 5e-6
+        self.Active_Area_base = 100
+        self.TC_base = 50e-6
+        self.vos_base = 0.1e-3    
+        self.Power_base = 0.72
+        self.sr_base = 0.2
+        self.GBW_base = 2.4e6
+
+        self.GND = 0
+        self.Vdd = 1.8    

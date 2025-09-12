@@ -260,3 +260,256 @@ xr1_1__dmy0  net4 xr1_1__dmy0  rppolyhri3k W=0.42u L=1000.0u m=1.0 s=1.0 mf=1
 xr1_2__dmy0  xr1_1__dmy0 net5  rppolyhri3k W=0.42u L=1000.0u m=1.0 s=1.0 mf=1 
 ```
 
+### Bandgap Voltage and Current Reference without Amplifiers
+
+- "SPICE" file
+
+```spice
+.TEMP 25
+.option post=1
+.option accuracy=1
+.option symb=1
+.option dcon=1
+.option captab
+*.option timestep=1e-12
+.option nomod
+
+.include "netlist"
+
+.inc "PDK.hspice" 
+.lib "PDK.hspice" typical
+.lib "PDK.hspice" diode_typical
+.lib "PDK.hspice" res_typical
+.lib "PDK.hspice" mimcap_typical
+.lib "PDK.hspice" diode_typical
+.lib "PDK.hspice" bjt_typical
+.lib "PDK.hspice" bjt_typical
+
+
+VGNDA GNDA 0 0
+VDDA VDDA 0 2 ac 1
+VIREF IREF 0 1 
+.op
+
+.dc temp -45 125 0.01 
+.measure dc VTC1 FIND V(vref1) AT 25
+.measure dc maxval1 MAX V(vref1) from=-45 to=125
+.measure dc minval1 MIN V(vref1) from=-45 to=125
+.measure dc avgval1 AVG V(vref1) from=-45 to=125
+.measure dc ppavl1  PP V(vref1) from=-45 to=125
+.measure dc TCV param='ppavl1/avgval1/170'
+.measure dc CTC1 FIND i(viref) AT 25
+.measure dc maxval2 MAX i(viref) from=-45 to=125
+.measure dc minval2 MIN i(viref) from=-45 to=125
+.measure dc avgval2 AVG i(viref) from=-45 to=125
+.measure dc ppavl2  PP i(viref) from=-45 to=125
+.measure dc TCC param='ppavl2/avgval2/170'
+
+
+.DC VDDA 0 5 0.01 
+.measure dc VLS1 FIND V(vref1) AT 2
+.measure dc maxval4 MAX V(vref1) from=2 to=5
+.measure dc minval4 MIN V(vref1) from=2 to=5
+.measure dc avgval4 AVG V(vref1) from=2 to=5
+.measure dc ppavl4  PP V(vref1) from=2 to=5
+.measure dc LSV param='ppavl4/avgval4/3'
+.measure dc CLS1 FIND i(viref) AT 2
+.measure dc maxval5 MAX i(viref) from=2 to=5
+.measure dc minval5 MIN i(viref) from=2 to=5
+.measure dc avgval5 AVG i(viref) from=2 to=5
+.measure dc ppavl5  PP i(viref) from=2 to=5
+.measure dc LSC param='ppavl5/avgval5/3'
+
+.ac DEC 10 0.01 100meg
+.measure ac psrr1_10Hz find par('vdb(vref1)') at 10
+.measure ac psrr1_100Hz find par('vdb(vref1)') at 100
+.measure ac psrr1_1KHz find par('vdb(vref1)') at 1K
+.measure ac psrr1_10KHz find par('vdb(vref1)') at 10K
+.measure ac psrr1_100KHz find par('vdb(vref1)') at 100K
+.measure ac psrr1_1MHz find par('vdb(vref1)') at 1000KHz
+.measure ac psrr1_10MHz find par('vdb(vref1)') at 10000KHz
+
+.end
+```
+
+- Netlist
+
+  ```spice
+  ** Cell name: BGRVI
+  ** View name: schematic
+  *Bias circuit current mirror pair 1
+  xms6 net025 vbias vdda vdda pmos_1p8 w=1.75e-6 l=3e-6 m=1 
+  xms5 net019 vbias vdda vdda pmos_1p8 w=1.75e-6 l=3e-6 m=1 
+  xmp8 net9 vbias vdda vdda pmos_1p8 w=1.75e-6 l=3e-6 m=1 
+  
+  *Bias circuit current mirror pair 2
+  xms3 vbias vbias net019 net019 pmos_1p8 w=6e-6 l=500e-9 m=2 
+  xms4 net022 vbias net025 net025 pmos_1p8 w=6e-6 l=500e-9 m=2 
+  xmp7 vg vbias net9 net9 pmos_1p8 w=6e-6 l=500e-9 m=2
+  
+  *Bias circuit current mirror pair 3
+  xms1 vbias net022 net098 gnda nmos_1p8 w=26e-6 l=180e-9 m=8 
+  xms2 net022 net022 gnda gnda nmos_1p8 w=26e-6 l=180e-9 m=2 
+  
+  *Bias circuit resistor RS1 (three resistors in series)
+  xrs12 net096 net092 gnda npolyf_u l=106.135e-6 w=800e-9 s=50 m=1 
+  xrs11 net098 net096 gnda npolyf_u l=106.135e-6 w=800e-9 s=50 m=1 
+  xrs13 net092 gnda gnda npolyf_u l=106.135e-6 w=800e-9 s=50 m=1 
+  
+  *Bias circuit start-up circuit
+  xcb1 vdda net027 mim_2p0fF_tm l=5e-6 w=5e-6 m=1 par=1
+  xmb1 net027 net022 gnda gnda nmos_1p8 w=1e-6 l=8e-6 m=1
+  xmb2 vbias net027 gnda gnda nmos_1p8 w=8e-6 l=180e-9 m=5 
+  
+  *LS enhancement
+  xmp6 net7 net7 vg vg pmos_1p8 w=220e-9 l=30e-6 m=1 
+  xmp5 gnda vref1 net7 net7 pmos_1p8 w=220e-9 l=30e-6 m=1 
+  xmn1 net48 vy vref1 gnda nmos_1p8 w=10e-6 l=500e-9 m=10 
+  xmn2 net33 vddbgr net48 gnda nmos_1p8 w=3e-6 l=1.2e-6 m=9 
+  xmn3 vdda vg vddbgr gnda nmos_1p8 w=10e-6 l=180e-9 m=1 
+  
+  *Two BJT transistors in the core circuit
+  xq1 vp vref1 net42 net42 vnpn_0p54x2_sm062 m=15 
+  xq2 vy vref1 net039 net039 vnpn_0p54x2_sm062 m=1 
+  
+  *R1 of the core circuit
+  xr1 net42 net039 gnda npolyf_u l=100e-6 w=800e-9 s=49 m=1 
+  
+  *R2 of the core circuit (two resistors in series)
+  xr21 net039 net073 gnda npolyf_u l=100e-6 w=800e-9 s=100 m=1
+  xr22 net073 gnda gnda npolyf_u l=100e-6 w=800e-9 s=100 m=1 
+  
+  *Start-up circuit of the core circuit
+  xma1 vc vref1 gnda gnda nmos_1p8 w=220e-9 l=2e-6 m=1 
+  xma2 vc vref1 net038 net038 pmos_1p8 w=220e-9 l=2e-6 m=3 
+  xma3 net038 net038 vddbgr vddbgr pmos_1p8 w=220e-9 l=30e-6 m=1
+  xma4 vp vc gnda gnda nmos_1p8 w=1e-6 l=8e-6 m=3 
+  
+  *Current mirror pair 1 of the core circuit
+  xmp1 net21 vp vddbgr vddbgr pmos_1p8 w=1.8e-6 l=10e-6 m=1 
+  xmp2 net28 vp vddbgr vddbgr pmos_1p8 w=1.8e-6 l=10e-6 m=1
+  
+  *Current mirror pair 2 of the core circuit
+  xmp3 vp vp net21 net21 pmos_1p8 w=8.5e-6 l=2.5e-6 m=2 
+  xmp4 vy vp net28 net28 pmos_1p8 w=8.5e-6 l=2.5e-6 m=2
+  
+  *Current mirror pair 3 of the core circuit
+  xmp9 net33 net33 net34 net34 pmos_1p8 w=3e-6 l=1.2e-6 m=10 
+  xmp10 iref net33 net47 net47 pmos_1p8 w=3e-6 l=1.2e-6 m=10 
+  
+  *Current mirror pair 4 of the core circuit
+  xmp11 net34 net33 vdda vdda pmos_1p8 w=1.2e-6 l=18e-6 m=20 
+  xmp12 net47 net33 vdda vdda pmos_1p8 w=1.2e-6 l=18e-6 m=20 
+  
+  *Resistor R3 of the current source (nine resistors in series)
+  xr39 net088 gnda gnda pplus_u l=100e-6 w=800e-9 s=100 m=1 
+  xr38 net093 net088 gnda pplus_u l=100e-6 w=800e-9 s=100 m=1 
+  xr17 net090 net093 gnda pplus_u l=100e-6 w=800e-9 s=100 m=1 
+  xr36 net089 net090 gnda pplus_u l=100e-6 w=800e-9 s=100 m=1 
+  xr35 net075 net089 gnda pplus_u l=100e-6 w=800e-9 s=100 m=1 
+  xr34 net091 net075 gnda pplus_u l=100e-6 w=800e-9 s=100 m=1 
+  xr33 net087 net091 gnda pplus_u l=100e-6 w=800e-9 s=100 m=1 
+  xr32 net54 net087 gnda pplus_u l=100e-6 w=800e-9 s=100 m=1 
+  xr31 vref1 net54 gnda npolyf_u l=100e-6 w=800e-9 s=100 m=1 
+  
+  *Output compensation capacitor
+  xcc vy gnda mim_2p0fF_tm l=5e-6 w=5e-6 m=1
+  ```
+
+  
+
+### Dual-Output Subthreshold CMOS Voltage Reference  
+
+- "SPICE" file
+
+  
+
+```spice
+.TEMP 25
+.option post=1
+.option accuracy=1
+.option symb=1
+.option dcon=1
+.option captab
+*.option timestep=1e-12
+.option nomod
+
+.include "netlist"
+
+
+.inc "PDK.hspice" 
+.lib "PDK.hspice" typical
+.lib "PDK.hspice" mimcap_typical
+.lib "PDK.hspice" typical
+
+VGNDA GNDA 0 0
+VDDA VDDA 0 0.8 ac 1
+.op
+
+.dc temp -40 125 0.01 
+.measure dc VTC1 FIND V(vref1) AT 25
+.measure dc maxval1 MAX V(vref1) from=-40 to=125
+.measure dc minval1 MIN V(vref1) from=-40 to=125
+.measure dc avgval1 AVG V(vref1) from=-40 to=125
+.measure dc ppavl1  PP V(vref1) from=-40 to=125
+.measure dc TC1 param='ppavl1/avgval1/165'
+.measure dc VTC2 FIND V(vref2) AT 25
+.measure dc maxval2 MAX V(vref2) from=-40 to=125
+.measure dc minval2 MIN V(vref2) from=-40 to=125
+.measure dc avgval2 AVG V(vref2) from=-40 to=125
+.measure dc ppavl2  PP V(vref2) from=-40 to=125
+.measure dc TC2 param='ppavl2/avgval2/165'
+
+
+.DC VDDA 0 1.8 0.01 
+.measure dc VLS1 FIND V(vref1) AT 0.8
+.measure dc maxval4 MAX V(vref1) from=0.6 to=1.8
+.measure dc minval4 MIN V(vref1) from=0.6 to=1.8
+.measure dc avgval4 AVG V(vref1) from=0.6 to=1.8
+.measure dc ppavl4  PP V(vref1) from=0.6 to=1.8
+.measure dc LS1 param='ppavl4/avgval4/1.2'
+.measure dc VLS2 FIND V(vref2) AT 0.8
+.measure dc maxval5 MAX V(vref2) from=0.8 to=1.8
+.measure dc minval5 MIN V(vref2) from=0.8 to=1.8
+.measure dc avgval5 AVG V(vref2) from=0.8 to=1.8
+.measure dc ppavl5  PP V(vref2) from=0.8 to=1.8
+.measure dc LS2 param='ppavl5/avgval5/1'
+
+
+.ac DEC 10 0.01 100meg
+.measure ac psrr1_10Hz find par('vdb(vref1)') at 10
+.measure ac psrr1_100Hz find par('vdb(vref1)') at 100
+.measure ac psrr1_1KHz find par('vdb(vref1)') at 1K
+.measure ac psrr1_10KHz find par('vdb(vref1)') at 10K
+.measure ac psrr1_100KHz find par('vdb(vref1)') at 100K
+.measure ac psrr1_1MHz find par('vdb(vref1)') at 1000KHz
+.measure ac psrr1_10MHz find par('vdb(vref1)') at 10000KHz
+.measure ac psrr2_10Hz find par('vdb(vref2)') at 10
+.measure ac psrr2_100Hz find par('vdb(vref2)') at 100
+.measure ac psrr2_1KHz find par('vdb(vref2)') at 1K
+.measure ac psrr2_10KHz find par('vdb(vref2)') at 10K
+.measure ac psrr2_100KHz find par('vdb(vref2)') at 100K
+.measure ac psrr2_1MHz find par('vdb(vref2)') at 1000KHz
+.measure ac psrr2_10MHz find par('vdb(vref2)') at 10000KHz
+.end
+```
+
+- Netlist
+
+```spice
+*Current mirror
+xm1 net14 net14 vdda vdda pmos_1p8 w=230e-9 l=18e-6 m=1 
+xm2 net15 net14 vdda vdda pmos_1p8 w=230e-9 l=18e-6 m=1 
+xm3 vref2 net14 vdda vdda pmos_1p8 w=1.84e-6 l=18e-6 m=1
+
+*Current source and active load
+xm4 net15 net15 vref1 gnda nmos_1p8 w=6e-6 l=2e-6 m=1 
+xm5 net14 vref1 gnda gnda nmos_1p8 w=300e-9 l=18e-6 m=1
+ 
+xm7 vref2 vref2 gnda gnda nmos_6p0 w=300e-9 l=20e-6 m=1 
+xm6 vref1 net15 gnda gnda nmos_6p0 w=8e-6 l=8e-6 m=1 
+
+*Voltage stabilizing capacitor
+xco2 vref2 gnda mim_2p0fF_tm l=10e-6 w=5e-6 m=10 
+xco1 vref1 gnda mim_2p0fF_tm l=10e-6 w=5e-6 m=90
+```

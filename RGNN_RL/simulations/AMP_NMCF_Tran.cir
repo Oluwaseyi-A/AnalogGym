@@ -4,7 +4,7 @@ Test OpAmp Tran
 ***************************************
 * Step 1: Replace circuit netlist here.
 *************************************** 
-.include ../simulations/NMCF_Pin_3_HSPICE_130.txt
+.include ../simulations/AMP_NMCF_Pin_3_HSPICE_130.txt
 
 .param mc_mm_switch=0
 .param mc_pr_switch=0
@@ -17,8 +17,8 @@ Test OpAmp Tran
 * Step 2: Replace circuit param.  here.
 *************************************** 
 .PARAM supply_voltage = 1.8
-.PARAM VCM_ratio = 0.4
-.PARAM PARAM_CLOAD =10.00p 
+.PARAM VCM_ratio = 0.25
+.PARAM PARAM_CLOAD =100.00p 
 .PARAM val0 = 3.000000e-01
 .PARAM val1 = 5.000000e-01
 .PARAM GBW_ideal = 5e4
@@ -62,18 +62,20 @@ set units=degrees
 
 tran 1u 4.01e-4
 meas tran t_rise_edge when v(vout3)=0.4 rise=1
-let t_rise = t_rise_edge-1u
+let t_rise_ = t_rise_edge-1u
+let t_rise = t_rise_*1e6
 let sr_rise = 0.1/t_rise
 print t_rise
 print sr_rise
 meas tran t_fall_edge when v(vout3)=0.4 fall=1
-let t_fall = t_fall_edge - 1u - 10/5e4 
+let t_fall_ = t_fall_edge - 1u - 10/5e4 
+let t_fall = t_fall_*1e6
 let sr_fall = 0.1/t_fall
 print t_fall
 print sr_fall
 wrdata AMP_NMCF_Tran sr_rise sr_fall
 plot v(visr) v(vout3)
-write tran.dat v(vout3) v(visr)
+write AMP_NMCF_tran.dat v(vout3) v(visr)
 
 * OP
 op

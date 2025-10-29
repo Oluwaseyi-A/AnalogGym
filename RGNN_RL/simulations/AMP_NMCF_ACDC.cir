@@ -4,7 +4,7 @@ Test OpAmp ACDC
 ***************************************
 * Step 1: Replace circuit netlist here.
 *************************************** 
-.include ../simulations/NMCF_Pin_3_HSPICE_130.txt
+.include ../simulations/AMP_NMCF_Pin_3_HSPICE_130.txt
 
 .param mc_mm_switch=0
 .param mc_pr_switch=0
@@ -17,8 +17,8 @@ Test OpAmp ACDC
 * Step 2: Replace circuit param.  here.
 *************************************** 
 .PARAM supply_voltage = 1.8
-.PARAM VCM_ratio = 0.4
-.PARAM PARAM_CLOAD =10.00p 
+.PARAM VCM_ratio = 0.25
+.PARAM PARAM_CLOAD =100.00p 
 .include ../simulations/AMP_NMCF_vars.spice
 
 V1 vdd 0 'supply_voltage'
@@ -36,11 +36,12 @@ Cin opout_dc signal_in 1T
 * Leung_DFCFC1_Pin_3
 * Leung_DFCFC2_Pin_3
 
-* XOP gnda vdda vinn vinp vout
-*        |  |     |     |   |
+* XOP gnda vdda vinn vinp vout Ib
+*        |  |     |     |   |  | 
+*        |  |     |     |   |  bias current
 *        |  |     |     |   Output
 *        |  |     |     Non-inverting Input
-*        |  |      Inverting Input
+*        |  |     Inverting Input
 *        |  Positive Supply
 *        Negative Supply 
 
@@ -94,10 +95,10 @@ let TC = ppavl/avgval/165
 * Power meas   
 meas dc Ivdd25 FIND I(VVDDDC) AT=25
 let Power_ = -1 * Ivdd25 * 1.8
-let Power = Power_ * 1e6
+let Power = Power_ * 1e3
 *   Vos.meas   
 meas dc vout25 FIND V(vout6) AT=25
-let vos25 = vout25 - 1.8 * 0.4
+let vos25 = vout25 - 1.8 * 0.25
 wrdata AMP_NMCF_ACDC_DC TC Power vos25
 plot v(vout6)
 

@@ -1,0 +1,128 @@
+{
+  "batch_id": "amp_lhs_demo",
+  "topology_registry_path": "configs/amp_topology_registry.json",
+  "batch_root": "data/batches/amp_lhs_demo",
+  "execution": {
+    "mode": "serial",
+    "max_workers": 4
+  },
+  "sampling": {
+    "method": "lhs",
+    "seed": 1234,
+    "samples_per_topology": 10
+  },
+  "topologies": [
+    "Alfio_RAFFC_Pin_3",
+    "Fan_SMC_Pin_3",
+    "HoiLee_AFFC_Pin_3",
+    "Leung_DFCFC1_Pin_3",
+    "Peng_ACBC_Pin_3",
+    "Qu2017_AZC_Pin_3",
+    "Ramos_PFC_Pin_3",
+    "Sau_CFCC_Pin_3",
+    "Song_DACFC_Pin_3",
+    "Tan_CLIA_Pin_3"
+  ],
+  "design_sampling": {
+    "include_only_referenced_in_netlist": true,
+    "exclude": [
+      "CLOAD",
+      "VCM"
+    ]
+  },
+  "design_bound_presets": {
+    "MOSFET_L": {
+      "min": 0.16,
+      "max": 0.25,
+      "dtype": "float",
+      "scale": "linear"
+    },
+    "MOSFET_W": {
+      "min": 0.5,
+      "max": 2.5,
+      "dtype": "float",
+      "scale": "linear"
+    },
+    "MOSFET_M": {
+      "min": 1,
+      "max": 10,
+      "dtype": "int",
+      "scale": "linear"
+    },
+    "CAPACITOR": {
+      "min": "1p",
+      "max": "10p",
+      "dtype": "float",
+      "scale": "log"
+    },
+    "CURRENT": {
+      "min": "1u",
+      "max": "10u",
+      "dtype": "float",
+      "scale": "log"
+    },
+    "RESISTOR": {
+      "min": "0.1k",
+      "max": "10k",
+      "dtype": "float",
+      "scale": "log"
+    }
+  },
+  "topology_variable_overrides": {},
+  "acdc_testbench_overrides": {
+    "supply_voltage": 1.8,
+    "VCM_ratio": 0.25,
+    "PARAM_CLOAD": "500p"
+  },
+  "tran_testbench_overrides": {
+    "supply_voltage": 1.8,
+    "VCM_ratio": 0.25,
+    "PARAM_CLOAD": "500p",
+    "val0": 0.3,
+    "val1": 0.5,
+    "GBW_ideal": 50000.0
+  },
+  "environment_scenarios": [
+    {
+      "name": "nominal_tt",
+      "corner_name": "tt"
+    },
+    {
+      "name": "fast_high_v",
+      "corner_name": "ff",
+      "acdc_testbench_overrides": {
+        "supply_voltage": 1.98
+      },
+      "tran_testbench_overrides": {
+        "supply_voltage": 1.98
+      }
+    },
+    {
+      "name": "slow_low_v",
+      "corner_name": "ss",
+      "acdc_testbench_overrides": {
+        "supply_voltage": 1.62
+      },
+      "tran_testbench_overrides": {
+        "supply_voltage": 1.62
+      }
+    }
+  ],
+  "topology_run_overrides": {},
+  "target_specs": {
+    "phase_margin_target_deg": 60.0,
+    "dcgain_target_db": 130.0,
+    "psrp_target_db": -80.0,
+    "psrn_target_db": -80.0,
+    "cmrrdc_target_db": -80.0,
+    "vos_target_v": 0.00006,
+    "tc_target": 0.00001,
+    "settling_time_target_s": 0.000001,
+    "foml_target": 160.0,
+    "foms_target": 300.0,
+    "active_area_target": 150.0,
+    "power_target_mw": 0.3,
+    "gbw_target_hz": 1200000.0,
+    "sr_target": 0.6
+  }
+}

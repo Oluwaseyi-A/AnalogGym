@@ -1,0 +1,75 @@
+{
+  "family": "amp",
+  "defaults": {
+    "acdc_testbench_template": "AnalogGym/Amplifier/amp_spice_testbench/TB_Amplifier_ACDC.cir",
+    "tran_testbench_template": "AnalogGym/Amplifier/amp_spice_testbench/TB_Amplifier_Tran.cir",
+    "pdk_root": "PDK/sky130_pdk",
+    "pdk_zip": "PDK/sky130_pdk.zip"
+  },
+  "topologies": {
+    "Alfio_RAFFC_Pin_3": {
+      "netlist_path": "AnalogGym/Amplifier/spice_netlist/Alfio_RAFFC_Pin_3",
+      "design_variables_path": "AnalogGym/Amplifier/design_variables/Alfio_RAFFC_Pin_3"
+    },
+    "Fan_SMC_Pin_3": {
+      "netlist_path": "AnalogGym/Amplifier/spice_netlist/Fan_SMC_Pin_3",
+      "design_variables_path": "AnalogGym/Amplifier/design_variables/Fan_SMC_Pin_3"
+    },
+    "HoiLee_AFFC_Pin_3": {
+      "netlist_path": "AnalogGym/Amplifier/spice_netlist/HoiLee_AFFC_Pin_3",
+      "design_variables_path": "AnalogGym/Amplifier/design_variables/HoiLee_AFFC_Pin_3"
+    },
+    "Leung_DFCFC1_Pin_3": {
+      "netlist_path": "AnalogGym/Amplifier/spice_netlist/Leung_DFCFC1_Pin_3",
+      "design_variables_path": "AnalogGym/Amplifier/design_variables/Leung_DFCFC1_Pin_3"
+    },
+    "Leung_DFCFC2_Pin_3": {
+      "netlist_path": "AnalogGym/Amplifier/spice_netlist/Leung_DFCFC2_Pin_3",
+      "design_variables_path": "AnalogGym/Amplifier/design_variables/Leung_DFCFC2_Pin_3"
+    },
+    "Leung_NMCF_Pin_3": {
+      "netlist_path": "AnalogGym/Amplifier/spice_netlist/Leung_NMCF_Pin_3",
+      "design_variables_path": "AnalogGym/Amplifier/design_variables/Leung_NMCF_Pin_3"
+    },
+    "Leung_NMCNR_Pin_3": {
+      "netlist_path": "AnalogGym/Amplifier/spice_netlist/Leung_NMCNR_Pin_3",
+      "design_variables_path": "AnalogGym/Amplifier/design_variables/Leung_NMCNR_Pin_3"
+    },
+    "Peng_ACBC_Pin_3": {
+      "netlist_path": "AnalogGym/Amplifier/spice_netlist/Peng_ACBC_Pin_3",
+      "design_variables_path": "AnalogGym/Amplifier/design_variables/Peng_ACBC_Pin_3"
+    },
+    "Peng_IAC_Pin_3": {
+      "netlist_path": "AnalogGym/Amplifier/spice_netlist/Peng_IAC_Pin_3",
+      "design_variables_path": "AnalogGym/Amplifier/design_variables/Peng_IAC_Pin_3"
+    },
+    "Peng_TCFC_Pin_3": {
+      "netlist_path": "AnalogGym/Amplifier/spice_netlist/Peng_TCFC_Pin_3",
+      "design_variables_path": "AnalogGym/Amplifier/design_variables/Peng_TCFC_Pin_3"
+    },
+    "Qu2017_AZC_Pin_3": {
+      "netlist_path": "AnalogGym/Amplifier/spice_netlist/Qu2017_AZC_Pin_3",
+      "design_variables_path": "AnalogGym/Amplifier/design_variables/Qu2017_AZC_Pin_3"
+    },
+    "Ramos_PFC_Pin_3": {
+      "netlist_path": "AnalogGym/Amplifier/spice_netlist/Ramos_PFC_Pin_3",
+      "design_variables_path": "AnalogGym/Amplifier/design_variables/Ramos_PFC_Pin_3"
+    },
+    "Sau_CFCC_Pin_3": {
+      "netlist_path": "AnalogGym/Amplifier/spice_netlist/Sau_CFCC_Pin_3",
+      "design_variables_path": "AnalogGym/Amplifier/design_variables/Sau_CFCC_Pin_3"
+    },
+    "Song_DACFC_Pin_3": {
+      "netlist_path": "AnalogGym/Amplifier/spice_netlist/Song_DACFC_Pin_3",
+      "design_variables_path": "AnalogGym/Amplifier/design_variables/Song_DACFC_Pin_3"
+    },
+    "Tan_CLIA_Pin_3": {
+      "netlist_path": "AnalogGym/Amplifier/spice_netlist/Tan_CLIA_Pin_3",
+      "design_variables_path": "AnalogGym/Amplifier/design_variables/Tan_CLIA_Pin_3"
+    },
+    "Yan_AZ_Pin_3": {
+      "netlist_path": "AnalogGym/Amplifier/spice_netlist/Yan_AZ_Pin_3",
+      "design_variables_path": "AnalogGym/Amplifier/design_variables/Yan_AZ_Pin_3"
+    }
+  }
+}

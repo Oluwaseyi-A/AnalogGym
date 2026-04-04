@@ -1,0 +1,42 @@
+{
+  "topology_name": "HoiLee_AFFC_Pin_3",
+  "corner_name": "tt",
+  "netlist_path": "AnalogGym/Amplifier/spice_netlist/HoiLee_AFFC_Pin_3",
+  "design_variables_path": "AnalogGym/Amplifier/design_variables/HoiLee_AFFC_Pin_3",
+  "acdc_testbench_template": "AnalogGym/Amplifier/amp_spice_testbench/TB_Amplifier_ACDC.cir",
+  "tran_testbench_template": "AnalogGym/Amplifier/amp_spice_testbench/TB_Amplifier_Tran.cir",
+  "pdk_root": "PDK/sky130_pdk",
+  "pdk_zip": "PDK/sky130_pdk.zip",
+  "output_csv": "data/raw/amp_samples.csv",
+  "run_root": "data/raw/amp_runs",
+  "parameter_overrides": {},
+  "acdc_testbench_overrides": {
+    "supply_voltage": 1.8,
+    "VCM_ratio": 0.25,
+    "PARAM_CLOAD": "500p"
+  },
+  "tran_testbench_overrides": {
+    "supply_voltage": 1.8,
+    "VCM_ratio": 0.25,
+    "PARAM_CLOAD": "500p",
+    "val0": 0.3,
+    "val1": 0.5,
+    "GBW_ideal": 50000.0
+  },
+  "target_specs": {
+    "phase_margin_target_deg": 60.0,
+    "dcgain_target_db": 130.0,
+    "psrp_target_db": -80.0,
+    "psrn_target_db": -80.0,
+    "cmrrdc_target_db": -80.0,
+    "vos_target_v": 0.00006,
+    "tc_target": 0.00001,
+    "settling_time_target_s": 0.000001,
+    "foml_target": 160.0,
+    "foms_target": 300.0,
+    "active_area_target": 150.0,
+    "power_target_mw": 0.3,
+    "gbw_target_hz": 1200000.0,
+    "sr_target": 0.6
+  }
+}
